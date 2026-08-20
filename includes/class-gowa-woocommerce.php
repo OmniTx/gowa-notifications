@@ -10,8 +10,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 class GOWA_WooCommerce {
 
     public function __construct() {
-        // Automatic Order Status Triggers
-        add_action( 'woocommerce_new_order', array( $this, 'on_new_order_receipt' ), 20, 1 );
+        // Customer Checkout Trigger (Primary - guarantees complete order contents)
+        add_action( 'woocommerce_checkout_order_processed', array( $this, 'on_new_order_receipt' ), 20, 1 );
+
+        // Order Status Change Triggers
         add_action( 'woocommerce_order_status_processing', array( $this, 'on_order_processing' ), 20, 2 );
         add_action( 'woocommerce_order_status_completed', array( $this, 'on_order_completed' ), 20, 1 );
         add_action( 'woocommerce_order_status_cancelled', array( $this, 'on_order_cancelled' ), 20, 2 );
@@ -20,7 +22,7 @@ class GOWA_WooCommerce {
         add_action( 'woocommerce_low_stock', array( $this, 'on_low_stock' ), 20, 1 );
         add_action( 'woocommerce_no_stock', array( $this, 'on_no_stock' ), 20, 1 );
 
-        // Order Actions Dropdown
+        // Order Actions Dropdown (Admin manual triggers)
         add_filter( 'woocommerce_order_actions', array( $this, 'add_order_actions' ) );
         add_action( 'woocommerce_order_action_test_whatsapp_receipt', array( $this, 'process_action_test_receipt' ) );
         add_action( 'woocommerce_order_action_test_whatsapp_completed', array( $this, 'process_action_test_completed' ) );
@@ -62,12 +64,29 @@ class GOWA_WooCommerce {
     }
 
     /**
-     * Trigger on new order received
+     * Trigger on new order received via frontend checkout.
+     *
+     * Uses woocommerce_checkout_order_processed instead of woocommerce_new_order
+     * to guarantee this only fires for actual customer checkouts where the
+     * complete order contents (items, totals, customer data) are fully populated.
+     *
+     * The woocommerce_new_order hook can fire in various non-checkout scenarios:
+     * - Admin manually creating orders
+     * - Order imports via CSV/WP-CLI
+     * - Orders restored from trash
+     * - Third-party plugins programmatically creating orders
+     *
+     * @param int $order_id The order ID.
      */
     public function on_new_order_receipt( $order_id ) {
         $settings = get_option( 'gowa_whatsapp_settings', array() );
         $order = wc_get_order( $order_id );
         if ( ! $order ) {
+            return;
+        }
+
+        // Verify order has line items (additional safety check for data integrity)
+        if ( $order->get_item_count() < 1 ) {
             return;
         }
 
@@ -317,6 +336,12 @@ class GOWA_WooCommerce {
 
     /**
      * Parse placeholders for WC Order
+     *
+     * Supports all standard order tags plus variation attributes in item list.
+     *
+     * @param string    $template Message template with placeholders.
+     * @param WC_Order  $order    WooCommerce order object.
+     * @return string   Parsed message with placeholders replaced.
      */
     public function parse_order_tags( $template, $order ) {
         $items_summary = array();
