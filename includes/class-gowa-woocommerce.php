@@ -320,18 +320,87 @@ class GOWA_WooCommerce {
      */
     public function parse_order_tags( $template, $order ) {
         $items_summary = array();
-        foreach ( $order->get_items() as $item ) {
-            $items_summary[] = "• " . $item->get_name() . " (x" . $item->get_quantity() . ")";
+
+        if ( $order && is_a( $order, 'WC_Order' ) ) {
+            $items = $order->get_items( 'line_item' );
+
+            foreach ( $items as $item_id => $item ) {
+                $name     = $item->get_name();
+                $quantity = $item->get_quantity();
+
+                // Fallback to product name if the order item name is empty.
+                if ( empty( $name ) ) {
+                    $product = $item->get_product();
+
+                    if ( $product ) {
+                        $name = $product->get_name();
+                    }
+                }
+
+                if ( empty( $name ) ) {
+                    $name = __( 'Unknown product', 'gowa-whatsapp' );
+                }
+
+                $line = '• ' . $name . ' (x' . $quantity . ')';
+
+                // Add variation attributes when available.
+                $variation_id = $item->get_variation_id();
+
+                if ( $variation_id ) {
+                    $variation = wc_get_product( $variation_id );
+
+                    if ( $variation ) {
+                        $attributes = array();
+
+                        foreach ( $variation->get_variation_attributes() as $attribute => $value ) {
+                            if ( empty( $value ) ) {
+                                continue;
+                            }
+
+                            $attribute_name = str_replace( 'attribute_', '', $attribute );
+                            $attribute_name = wc_attribute_label( $attribute_name );
+
+                            $attributes[] = $attribute_name . ': ' . $value;
+                        }
+
+                        if ( ! empty( $attributes ) ) {
+                            $line .= ' — ' . implode( ', ', $attributes );
+                        }
+                    }
+                }
+
+                $items_summary[] = $line;
+            }
         }
 
-        $items_str = implode( "\n", $items_summary );
+        /*
+         * If the order has items but something prevented the normal
+         * get_items() loop from returning them, provide a useful fallback.
+         */
+        if ( empty( $items_summary ) && $order ) {
+            $item_count = $order->get_item_count();
+
+            if ( $item_count > 0 ) {
+                $items_summary[] = '• ' . sprintf(
+                    __( '%d item(s)', 'gowa-whatsapp' ),
+                    $item_count
+                );
+            }
+        }
+
+        $items_str = ! empty( $items_summary )
+            ? implode( "\n", $items_summary )
+            : __( 'No products found.', 'gowa-whatsapp' );
 
         $customer_note = $order->get_customer_note();
+
         if ( empty( $customer_note ) ) {
             $customer_note = 'None';
         }
 
-        $total_formatted = wp_strip_all_tags( html_entity_decode( $order->get_formatted_order_total() ) );
+        $total_formatted = wp_strip_all_tags(
+            html_entity_decode( $order->get_formatted_order_total() )
+        );
 
         $tags = array(
             '{site_name}'           => get_bloginfo( 'name' ),
@@ -347,12 +416,23 @@ class GOWA_WooCommerce {
             '{customer_note}'       => $customer_note,
             '{order_total}'         => $total_formatted,
             '{order_items}'         => $items_str,
-            '{shipping_address}'    => $order->get_formatted_shipping_address() ? $order->get_formatted_shipping_address() : $order->get_formatted_billing_address(),
+            '{shipping_address}'    => $order->get_formatted_shipping_address()
+                ? $order->get_formatted_shipping_address()
+                : $order->get_formatted_billing_address(),
             '{payment_method}'      => $order->get_payment_method_title(),
-            '{order_date}'          => $order->get_date_created() ? $order->get_date_created()->date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) ) : '',
+            '{order_date}'          => $order->get_date_created()
+                ? $order->get_date_created()->date_i18n(
+                    get_option( 'date_format' ) . ' ' . get_option( 'time_format' )
+                )
+                : '',
         );
 
-        $parsed = str_replace( array_keys( $tags ), array_values( $tags ), $template );
+        $parsed = str_replace(
+            array_keys( $tags ),
+            array_values( $tags ),
+            $template
+        );
+
         return apply_filters( 'gowa_parsed_order_message', $parsed, $order );
     }
 }
