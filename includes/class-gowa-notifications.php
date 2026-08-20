@@ -38,7 +38,7 @@ class GOWA_Notifications {
         }
 
         $default_tpl = ! empty( $settings['wp_user_reg_msg'] ) ? $settings['wp_user_reg_msg'] : "🎉 *New User Registered*\n\nSite: {site_name}\nUsername: {username}\nEmail: {email}\nRegistered: {date}";
-        $template    = GOWA_API::get_template_translation( 'wp_user_reg_msg', $default_tpl );
+        $template    = $default_tpl;
 
         $tags = array(
             '{site_name}'  => get_bloginfo( 'name' ),
@@ -72,7 +72,7 @@ class GOWA_Notifications {
         $post_title = $post ? $post->post_title : 'N/A';
 
         $default_tpl = ! empty( $settings['wp_comment_msg'] ) ? $settings['wp_comment_msg'] : "💬 *New Comment on {site_name}*\n\nAuthor: {author}\nPost: {post_title}\nComment: {comment_content}";
-        $template    = GOWA_API::get_template_translation( 'wp_comment_msg', $default_tpl );
+        $template    = $default_tpl;
 
         $tags = array(
             '{site_name}'        => get_bloginfo( 'name' ),

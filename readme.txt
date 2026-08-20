@@ -5,7 +5,7 @@ Tags: whatsapp, woocommerce whatsapp, gowa, notifications, whatsapp gateway
 Requires at least: 5.6
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,6 +39,15 @@ Developed by [Imran Ahmed](https://imran.mvp.bd) ([omnitx](https://github.com/om
 2. Activate the plugin in WordPress.
 3. Go to **Settings > GOWA WhatsApp** and configure your server URL, credentials, and admin phone.
 4. Verify your connection on the **Direct Client Message / Test** tab.
+
+== Changelog ==
+
+= 1.3.0 =
+* Added: Automatic update checks from GitHub Releases, with one-click update from the Plugins page.
+* Fixed: Fatal error on new user registration / new comment notifications caused by a call to an undefined method.
+
+= 1.2.0 =
+* Initial public release.
 
 == Author ==
 

@@ -267,15 +267,15 @@ class GOWA_API {
      * Universal Phone Number Normalizer
      * 
      * Handles:
-     * 1. JID strings (e.g. 8801700000000@s.whatsapp.net) -> returns trimmed
-     * 2. Leading '+' (e.g. +8801700000000, +14155552671) -> strips '+'
-     * 3. Leading '00' (e.g. 008801700000000) -> strips '00'
+     * 1. JID strings (e.g. 880123456789@s.whatsapp.net) -> returns trimmed
+     * 2. Leading '+' (e.g. +880123456789, +14155552671) -> strips '+'
+     * 3. Leading '00' (e.g. 00880123456789) -> strips '00'
      * 4. Leading '0' with Configured Country Code:
-     *    - BD (880): 01700000000 -> 8801700000000
+     *    - BD (880): 0123456789 -> 880123456789
      *    - ID (62): 08123456789 -> 628123456789
      *    - UK (44): 07123456789 -> 447123456789
      *    - IN (91): 09876543210 -> 919876543210
-     * 5. Plain International numbers (e.g. 8801700000000, 14155552671) -> untouched
+     * 5. Plain International numbers (e.g. 880123456789, 14155552671) -> untouched
      *
      * @param string $phone
      * @return string
