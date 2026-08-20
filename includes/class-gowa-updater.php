@@ -98,6 +98,27 @@ class GOWA_GitHub_Updater {
     }
 
     /**
+     * Prefer the CI-built release asset (e.g. gowa-whatsapp-notifications.zip,
+     * uploaded by release.yml with the correct folder structure already inside)
+     * over GitHub's raw zipball, which includes .github/, .git metadata via the
+     * commit snapshot, and extracts into a hash-suffixed folder name.
+     */
+    private function get_download_url() {
+        $info = $this->get_repository_info();
+
+        if ( ! empty( $info['assets'] ) && is_array( $info['assets'] ) ) {
+            foreach ( $info['assets'] as $asset ) {
+                if ( ! empty( $asset['browser_download_url'] ) && preg_match( '/\.zip$/i', $asset['name'] ) ) {
+                    return $asset['browser_download_url'];
+                }
+            }
+        }
+
+        // Fallback: no built asset attached to this release, use GitHub's auto zipball.
+        return ! empty( $info['zipball_url'] ) ? $info['zipball_url'] : '';
+    }
+
+    /**
      * Hook: pre_set_site_transient_update_plugins
      * Injects our plugin into the update transient when a newer GitHub release exists.
      */
@@ -111,8 +132,7 @@ class GOWA_GitHub_Updater {
             return $transient;
         }
 
-        $info = $this->get_repository_info();
-        $zip_url = ! empty( $info['zipball_url'] ) ? $info['zipball_url'] : '';
+        $zip_url = $this->get_download_url();
         if ( ! $zip_url ) {
             return $transient;
         }
@@ -161,7 +181,7 @@ class GOWA_GitHub_Updater {
         $popup->homepage       = ! empty( $plugin_data['PluginURI'] ) ? $plugin_data['PluginURI'] : '';
         $popup->requires       = ! empty( $plugin_data['RequiresWP'] ) ? $plugin_data['RequiresWP'] : '';
         $popup->requires_php   = ! empty( $plugin_data['RequiresPHP'] ) ? $plugin_data['RequiresPHP'] : '';
-        $popup->download_link  = ! empty( $info['zipball_url'] ) ? $info['zipball_url'] : '';
+        $popup->download_link  = $this->get_download_url();
         $popup->last_updated   = ! empty( $info['published_at'] ) ? $info['published_at'] : '';
         $popup->sections       = array(
             'description' => ! empty( $plugin_data['Description'] ) ? $plugin_data['Description'] : '',
