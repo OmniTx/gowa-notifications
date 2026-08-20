@@ -3,7 +3,7 @@
  * Plugin Name:       GOWA WhatsApp Notifications
  * Plugin URI:        https://github.com/omnitx/gowa-whatsapp-notifications
  * Description:       Automated and custom WhatsApp notifications for WordPress and WooCommerce powered by the self-hosted GOWA (Go WhatsApp Web Multi-Device) REST API gateway.
- * Version:           1.3.0
+ * Version:           1.3.1
  * Author:            Imran Ahmed
  * Author URI:        https://imran.mvp.bd
  * Text Domain:       gowa-whatsapp
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'GOWA_VERSION', '1.3.0' );
+define( 'GOWA_VERSION', '1.3.1' );
 define( 'GOWA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'GOWA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'GOWA_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
