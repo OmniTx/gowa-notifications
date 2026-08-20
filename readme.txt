@@ -42,6 +42,12 @@ Developed by [Imran Ahmed](https://imran.mvp.bd) ([omnitx](https://github.com/om
 
 == Changelog ==
 
+= 1.3.2 =
+
+* Tweak: Use `woocommerce_checkout_order_processed` hook for order receipts to ensure complete order data and prevent false triggers from admin orders, imports, or trash restores.
+* Fix: Rewritten `parse_order_tags()` now shows variation attributes, handles missing product names, filters line items only, and includes proper fallbacks.
+* Fix: Added item count validation before sending order notifications.
+
 = 1.3.1 =
 * Updater: prefer CI-built release asset over raw zipball
 
