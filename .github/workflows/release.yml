@@ -1,0 +1,44 @@
+name: Build & Release Plugin
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Package Plugin Archive
+        run: |
+          mkdir -p build/gowa-whatsapp-notifications
+          
+          # Copy only required plugin files into build directory
+          rsync -av --progress ./ build/gowa-whatsapp-notifications/ \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude '.vscode' \
+            --exclude 'build' \
+            --exclude '.gitignore'
+          
+          # Create installable WordPress zip
+          cd build
+          zip -r ../gowa-whatsapp-notifications.zip gowa-whatsapp-notifications/
+          cd ..
+          
+          ls -lh gowa-whatsapp-notifications.zip
+
+      - name: Create GitHub Release & Upload Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: gowa-whatsapp-notifications.zip
+          generate_release_notes: true
+          draft: false
+          prerelease: false
