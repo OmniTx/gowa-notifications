@@ -15,6 +15,19 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract Tag Annotation / Release Notes
+        id: tag_notes
+        run: |
+          NOTES=$(git tag -l --format='%(contents)' ${{ github.ref_name }})
+          if [ -z "$NOTES" ]; then
+            NOTES="Release ${{ github.ref_name }}"
+          fi
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Package Plugin Archive
         run: |
@@ -39,6 +52,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: gowa-whatsapp-notifications.zip
-          generate_release_notes: true
+          body: ${{ steps.tag_notes.outputs.notes }}
           draft: false
           prerelease: false
