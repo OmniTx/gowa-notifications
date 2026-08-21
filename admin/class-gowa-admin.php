@@ -14,6 +14,8 @@ class GOWA_Admin {
     public function __construct() {
         add_action( 'admin_menu', array( $this, 'add_menu_page' ) );
         add_action( 'admin_init', array( $this, 'save_settings' ) );
+        add_action( 'admin_init', array( $this, 'handle_export_settings' ) );
+        add_action( 'admin_init', array( $this, 'handle_import_settings' ) );
 
         // AJAX handlers for instant live testing & messaging
         add_action( 'wp_ajax_gowa_ajax_test_connection', array( $this, 'ajax_test_connection' ) );
@@ -74,6 +76,134 @@ class GOWA_Admin {
     }
 
     /**
+     * Export Settings as JSON file download
+     */
+    public function handle_export_settings() {
+        if ( ! isset( $_POST['gowa_export_nonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['gowa_export_nonce'] ), 'gowa_export_action' ) ) {
+            return;
+        }
+
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return;
+        }
+
+        $settings       = get_option( self::OPTION_NAME, array() );
+        $plugin_version = defined( 'GOWA_VERSION' ) ? GOWA_VERSION : '1.3.3';
+
+        $export_payload = array(
+            'plugin'      => 'gowa-whatsapp-notifications',
+            'version'     => $plugin_version,
+            'exported_at' => current_time( 'mysql' ),
+            'site_url'    => site_url(),
+            'settings'    => $settings,
+        );
+
+        $filename = 'gowa-whatsapp-settings-' . date( 'Y-m-d_H-i' ) . '.json';
+
+        nocache_headers();
+        header( 'Content-Type: application/json; charset=utf-8' );
+        header( 'Content-Disposition: attachment; filename=' . $filename );
+        header( 'Expires: 0' );
+
+        echo wp_json_encode( $export_payload, JSON_PRETTY_PRINT );
+        exit;
+    }
+
+    /**
+     * Import Settings from uploaded JSON file
+     */
+    public function handle_import_settings() {
+        if ( ! isset( $_POST['gowa_import_nonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['gowa_import_nonce'] ), 'gowa_import_action' ) ) {
+            return;
+        }
+
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return;
+        }
+
+        if ( empty( $_FILES['gowa_import_file']['tmp_name'] ) ) {
+            add_settings_error( 'gowa_messages', 'gowa_import_err', __( 'Please choose a valid JSON file to import.', 'gowa-whatsapp' ), 'error' );
+            return;
+        }
+
+        $json_content = file_get_contents( $_FILES['gowa_import_file']['tmp_name'] );
+        $data         = json_decode( $json_content, true );
+
+        if ( ! is_array( $data ) ) {
+            add_settings_error( 'gowa_messages', 'gowa_import_err', __( 'Invalid JSON file format.', 'gowa-whatsapp' ), 'error' );
+            return;
+        }
+
+        $settings = isset( $data['settings'] ) && is_array( $data['settings'] ) ? $data['settings'] : $data;
+
+        if ( ! empty( $settings ) && is_array( $settings ) ) {
+            $allowed_keys = array(
+                'api_url', 'device_id', 'auth_user', 'auth_pass', 'default_country_code', 'admin_phone',
+                'enable_wp_user_reg', 'wp_user_reg_msg', 'enable_wp_comment', 'wp_comment_msg',
+                'enable_wc_admin_order', 'wc_admin_order_msg', 'enable_wc_cust_process', 'wc_cust_process_msg',
+                'enable_wc_cust_complete', 'wc_cust_complete_msg', 'enable_wc_cust_cancelled', 'wc_cust_cancelled_msg',
+                'enable_wc_low_stock', 'wc_low_stock_msg'
+            );
+
+            $sanitized = array();
+            foreach ( $allowed_keys as $key ) {
+                if ( isset( $settings[ $key ] ) ) {
+                    if ( in_array( $key, array( 'enable_wp_user_reg', 'enable_wp_comment', 'enable_wc_admin_order', 'enable_wc_cust_process', 'enable_wc_cust_complete', 'enable_wc_cust_cancelled', 'enable_wc_low_stock' ) ) ) {
+                        $sanitized[ $key ] = ! empty( $settings[ $key ] ) ? 1 : 0;
+                    } elseif ( $key === 'api_url' ) {
+                        $sanitized[ $key ] = esc_url_raw( trim( $settings[ $key ] ) );
+                    } elseif ( in_array( $key, array( 'device_id', 'auth_user', 'auth_pass', 'admin_phone' ) ) ) {
+                        $sanitized[ $key ] = sanitize_text_field( trim( $settings[ $key ] ) );
+                    } elseif ( $key === 'default_country_code' ) {
+                        $sanitized[ $key ] = preg_replace( '/[^0-9]/', '', trim( $settings[ $key ] ) );
+                    } else {
+                        $sanitized[ $key ] = sanitize_textarea_field( $settings[ $key ] );
+                    }
+                }
+            }
+
+            if ( ! empty( $sanitized ) ) {
+                update_option( self::OPTION_NAME, $sanitized );
+                add_settings_error( 'gowa_messages', 'gowa_import_success', __( 'Settings imported successfully!', 'gowa-whatsapp' ), 'updated' );
+            } else {
+                add_settings_error( 'gowa_messages', 'gowa_import_err', __( 'No recognized settings found in the file.', 'gowa-whatsapp' ), 'error' );
+            }
+        } else {
+            add_settings_error( 'gowa_messages', 'gowa_import_err', __( 'No settings found in the JSON file.', 'gowa-whatsapp' ), 'error' );
+        }
+    }
+
+    /**
+     * Get default plugin settings
+     *
+     * @return array
+     */
+    public static function get_defaults() {
+        return array(
+            'api_url'                 => 'http://localhost:3000',
+            'device_id'               => '',
+            'auth_user'               => '',
+            'auth_pass'               => '',
+            'default_country_code'    => '880',
+            'admin_phone'             => '',
+            'enable_wp_user_reg'      => 1,
+            'wp_user_reg_msg'         => "🎉 *New User Registered*\n\nSite: {site_name}\nUsername: {username}\nEmail: {email}\nRegistered: {date}",
+            'enable_wp_comment'       => 0,
+            'wp_comment_msg'          => "💬 *New Comment on {site_name}*\n\nAuthor: {author}\nPost: {post_title}\nComment: {comment_content}",
+            'enable_wc_admin_order'   => 1,
+            'wc_admin_order_msg'      => "🛍️ *New Order Received! #{order_id}*\n\nCustomer: {customer_name}\nTotal: {order_total}\nItems:\n{order_items}\nPhone: {billing_phone}\nNotes: {customer_note}",
+            'enable_wc_cust_process'  => 1,
+            'wc_cust_process_msg'     => "Hello {customer_name},\n\nThank you for your order *#{order_id}* at {site_name}! We have received your order and it is currently being processed.\n\nOrdered Items:\n{order_items}\n\nOrder Total: {order_total}\n\nWe will contact you shortly for delivery.",
+            'enable_wc_cust_complete' => 1,
+            'wc_cust_complete_msg'    => "Hello {customer_name},\n\nYour order *#{order_id}* from {site_name} has been completed! 🎉\n\nThank you for shopping with us. Hope you enjoy our service!",
+            'enable_wc_cust_cancelled'=> 0,
+            'wc_cust_cancelled_msg'   => "Hello {customer_name},\n\nYour order *#{order_id}* at {site_name} has been cancelled. If you have any questions, please contact our support team.",
+            'enable_wc_low_stock'     => 0,
+            'wc_low_stock_msg'        => "⚠️ *Low Stock Alert*\n\nProduct: {product_name} (ID: {product_id})\nRemaining Stock: {stock_quantity}",
+        );
+    }
+
+    /**
      * AJAX Test Connection
      */
     public function ajax_test_connection() {
@@ -131,7 +261,17 @@ class GOWA_Admin {
             return;
         }
 
-        $settings   = get_option( self::OPTION_NAME, array() );
+        $defaults   = self::get_defaults();
+        $saved      = get_option( self::OPTION_NAME, array() );
+        $settings   = wp_parse_args( $saved, $defaults );
+
+        // If message templates are empty in database, fall back to default template
+        foreach ( array( 'wp_user_reg_msg', 'wp_comment_msg', 'wc_admin_order_msg', 'wc_cust_process_msg', 'wc_cust_complete_msg', 'wc_cust_cancelled_msg', 'wc_low_stock_msg' ) as $tpl_key ) {
+            if ( empty( $settings[ $tpl_key ] ) && ! empty( $defaults[ $tpl_key ] ) ) {
+                $settings[ $tpl_key ] = $defaults[ $tpl_key ];
+            }
+        }
+
         $config     = GOWA_API::get_config();
         $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( $_GET['tab'] ) : 'api';
         $is_wc_active = class_exists( 'WooCommerce' );
@@ -148,6 +288,7 @@ class GOWA_Admin {
                 <a href="?page=gowa-whatsapp&tab=wc" class="nav-tab <?php echo $active_tab === 'wc' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Client & Order Messages', 'gowa-whatsapp' ); ?></a>
                 <a href="?page=gowa-whatsapp&tab=wp" class="nav-tab <?php echo $active_tab === 'wp' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'WordPress Core Alerts', 'gowa-whatsapp' ); ?></a>
                 <a href="?page=gowa-whatsapp&tab=test" class="nav-tab <?php echo $active_tab === 'test' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Direct Client Message / Test', 'gowa-whatsapp' ); ?></a>
+                <a href="?page=gowa-whatsapp&tab=tools" class="nav-tab <?php echo $active_tab === 'tools' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Export / Import', 'gowa-whatsapp' ); ?></a>
             </h2>
 
             <?php if ( $active_tab === 'api' ) : ?>
@@ -482,6 +623,46 @@ class GOWA_Admin {
                     });
                 });
                 </script>
+
+            <?php elseif ( $active_tab === 'tools' ) : ?>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-top: 20px;">
+                    <!-- Export Settings Card -->
+                    <div class="card" style="padding: 20px; background: #fff; border-top: 4px solid #25D366; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <h2 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+                            <span class="dashicons dashicons-download" style="color: #25D366;"></span>
+                            <?php esc_html_e( 'Export Settings', 'gowa-whatsapp' ); ?>
+                        </h2>
+                        <p><?php esc_html_e( 'Download all your current GOWA WhatsApp settings (API configuration, admin numbers, and custom notification templates) as a JSON file backup.', 'gowa-whatsapp' ); ?></p>
+                        <form method="post" action="" style="margin-top: 20px;">
+                            <?php wp_nonce_field( 'gowa_export_action', 'gowa_export_nonce' ); ?>
+                            <button type="submit" class="button button-primary button-large" style="background:#25D366; border-color:#1EBE5D; color:#fff; display: inline-flex; align-items: center; gap: 6px;">
+                                <span class="dashicons dashicons-download" style="margin-top: -2px;"></span>
+                                <?php esc_html_e( 'Download Settings (.json)', 'gowa-whatsapp' ); ?>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Import Settings Card -->
+                    <div class="card" style="padding: 20px; background: #fff; border-top: 4px solid #0073aa; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <h2 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+                            <span class="dashicons dashicons-upload" style="color: #0073aa;"></span>
+                            <?php esc_html_e( 'Import Settings', 'gowa-whatsapp' ); ?>
+                        </h2>
+                        <p><?php esc_html_e( 'Upload a previously exported GOWA settings JSON file to restore your settings or migrate them to this store.', 'gowa-whatsapp' ); ?></p>
+                        <form method="post" action="" enctype="multipart/form-data" style="margin-top: 20px;">
+                            <?php wp_nonce_field( 'gowa_import_action', 'gowa_import_nonce' ); ?>
+                            <p>
+                                <input type="file" name="gowa_import_file" accept=".json" required style="padding: 5px; border: 1px dashed #ccc; width: 100%; box-sizing: border-box; background: #fafafa;">
+                            </p>
+                            <p style="margin-top: 15px;">
+                                <button type="submit" class="button button-secondary button-large" onclick="return confirm('<?php echo esc_js( __( 'Are you sure? Existing settings will be overwritten with the imported settings.', 'gowa-whatsapp' ) ); ?>');" style="display: inline-flex; align-items: center; gap: 6px;">
+                                    <span class="dashicons dashicons-upload" style="margin-top: -2px;"></span>
+                                    <?php esc_html_e( 'Upload & Restore Settings', 'gowa-whatsapp' ); ?>
+                                </button>
+                            </p>
+                        </form>
+                    </div>
+                </div>
             <?php endif; ?>
         </div>
         <?php

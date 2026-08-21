@@ -42,6 +42,11 @@ Developed by [Imran Ahmed](https://imran.mvp.bd) ([omnitx](https://github.com/om
 
 == Changelog ==
 
+= 1.3.3 =
+* Feature: Added Settings Export & Import tool to backup and restore configurations as JSON.
+* Fix: Auto-populate default notification templates in settings fields when empty.
+* Improvement: Safely merge missing default settings on activation.
+
 = 1.3.2 =
 
 * Tweak: Use `woocommerce_checkout_order_processed` hook for order receipts to ensure complete order data and prevent false triggers from admin orders, imports, or trash restores.
