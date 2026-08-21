@@ -174,36 +174,6 @@ class GOWA_Admin {
     }
 
     /**
-     * Get default plugin settings
-     *
-     * @return array
-     */
-    public static function get_defaults() {
-        return array(
-            'api_url'                 => 'http://localhost:3000',
-            'device_id'               => '',
-            'auth_user'               => '',
-            'auth_pass'               => '',
-            'default_country_code'    => '880',
-            'admin_phone'             => '',
-            'enable_wp_user_reg'      => 1,
-            'wp_user_reg_msg'         => "🎉 *New User Registered*\n\nSite: {site_name}\nUsername: {username}\nEmail: {email}\nRegistered: {date}",
-            'enable_wp_comment'       => 0,
-            'wp_comment_msg'          => "💬 *New Comment on {site_name}*\n\nAuthor: {author}\nPost: {post_title}\nComment: {comment_content}",
-            'enable_wc_admin_order'   => 1,
-            'wc_admin_order_msg'      => "🛍️ *New Order Received! #{order_id}*\n\nCustomer: {customer_name}\nTotal: {order_total}\nItems:\n{order_items}\nPhone: {billing_phone}\nNotes: {customer_note}",
-            'enable_wc_cust_process'  => 1,
-            'wc_cust_process_msg'     => "Hello {customer_name},\n\nThank you for your order *#{order_id}* at {site_name}! We have received your order and it is currently being processed.\n\nOrdered Items:\n{order_items}\n\nOrder Total: {order_total}\n\nWe will contact you shortly for delivery.",
-            'enable_wc_cust_complete' => 1,
-            'wc_cust_complete_msg'    => "Hello {customer_name},\n\nYour order *#{order_id}* from {site_name} has been completed! 🎉\n\nThank you for shopping with us. Hope you enjoy our service!",
-            'enable_wc_cust_cancelled'=> 0,
-            'wc_cust_cancelled_msg'   => "Hello {customer_name},\n\nYour order *#{order_id}* at {site_name} has been cancelled. If you have any questions, please contact our support team.",
-            'enable_wc_low_stock'     => 0,
-            'wc_low_stock_msg'        => "⚠️ *Low Stock Alert*\n\nProduct: {product_name} (ID: {product_id})\nRemaining Stock: {stock_quantity}",
-        );
-    }
-
-    /**
      * AJAX Test Connection
      */
     public function ajax_test_connection() {
@@ -256,26 +226,34 @@ class GOWA_Admin {
         }
     }
 
+    /**
+     * Get default plugin settings
+     *
+     * @return array
+     */
+    public static function get_defaults() {
+        return GOWA_WhatsApp_Plugin::get_defaults();
+    }
+
     public function render_settings_page() {
         if ( ! current_user_can( 'manage_options' ) ) {
             return;
         }
 
-        $defaults   = self::get_defaults();
-        $saved      = get_option( self::OPTION_NAME, array() );
-        $settings   = wp_parse_args( $saved, $defaults );
+        $defaults = self::get_defaults();
+        $saved    = get_option( self::OPTION_NAME, array() );
+        $settings = wp_parse_args( $saved, $defaults );
 
-        // If message templates are empty in database, fall back to default template
+        // If message templates are empty in saved settings, fallback to defaults so textareas are pre-populated
         foreach ( array( 'wp_user_reg_msg', 'wp_comment_msg', 'wc_admin_order_msg', 'wc_cust_process_msg', 'wc_cust_complete_msg', 'wc_cust_cancelled_msg', 'wc_low_stock_msg' ) as $tpl_key ) {
             if ( empty( $settings[ $tpl_key ] ) && ! empty( $defaults[ $tpl_key ] ) ) {
                 $settings[ $tpl_key ] = $defaults[ $tpl_key ];
             }
         }
-
-        $config     = GOWA_API::get_config();
-        $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( $_GET['tab'] ) : 'api';
+        $config       = GOWA_API::get_config();
+        $active_tab   = isset( $_GET['tab'] ) ? sanitize_text_field( $_GET['tab'] ) : 'api';
         $is_wc_active = class_exists( 'WooCommerce' );
-        $ajax_nonce = wp_create_nonce( 'gowa_admin_ajax_nonce' );
+        $ajax_nonce   = wp_create_nonce( 'gowa_admin_ajax_nonce' );
         ?>
         <div class="wrap gowa-admin-wrap" style="max-width: 1000px;">
             <h1><span class="dashicons dashicons-whatsapp" style="font-size: 32px; width: 32px; height: 32px; color: #25D366; vertical-align: middle;"></span> <?php esc_html_e( 'GOWA WhatsApp Notifications', 'gowa-whatsapp' ); ?></h1>
@@ -623,7 +601,6 @@ class GOWA_Admin {
                     });
                 });
                 </script>
-
             <?php elseif ( $active_tab === 'tools' ) : ?>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-top: 20px;">
                     <!-- Export Settings Card -->

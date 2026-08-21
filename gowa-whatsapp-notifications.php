@@ -38,8 +38,7 @@ class GOWA_WhatsApp_Plugin {
     }
 
     private function __construct() {
-        $this->load_dependencies();
-        $this->init_hooks();
+        $this->load_dependencies();$this->init_hooks();
     }
 
     private function load_dependencies() {
@@ -52,8 +51,6 @@ class GOWA_WhatsApp_Plugin {
 
         if ( is_admin() ) {
             require_once GOWA_PLUGIN_DIR . 'admin/class-gowa-admin.php';
-            require_once GOWA_PLUGIN_DIR . 'includes/class-gowa-updater.php';
-            new GOWA_GitHub_Updater( __FILE__, 'OmniTx/gowa-whatsapp-notifications', GOWA_VERSION );
         }
     }
 
@@ -75,14 +72,18 @@ class GOWA_WhatsApp_Plugin {
         load_plugin_textdomain( 'gowa-whatsapp', false, dirname( GOWA_PLUGIN_BASENAME ) . '/languages' );
     }
 
-    public function add_action_links( $links ) {
-        $settings_link = '<a href="' . admin_url( 'options-general.php?page=gowa-whatsapp' ) . '">' . __( 'Settings', 'gowa-whatsapp' ) . '</a>';
-        array_unshift( $links, $settings_link );
+    public function add_action_links( $links ) {$settings_link = '<a href="' . admin_url( 'options-general.php?page=gowa-whatsapp' ) . '">' . __( 'Settings', 'gowa-whatsapp' ) . '</a>';
+        array_unshift( $links,$settings_link );
         return $links;
     }
 
-    public function activate() {
-        $defaults = array(
+    /**
+     * Get default plugin settings
+     *
+     * @return array
+     */
+    public static function get_defaults() {
+        return array(
             'api_url'                 => 'http://localhost:3000',
             'device_id'               => '',
             'auth_user'               => '',
@@ -104,9 +105,14 @@ class GOWA_WhatsApp_Plugin {
             'enable_wc_low_stock'     => 0,
             'wc_low_stock_msg'        => "⚠️ *Low Stock Alert*\n\nProduct: {product_name} (ID: {product_id})\nRemaining Stock: {stock_quantity}",
         );
+    }
 
-        $existing = get_option( 'gowa_whatsapp_settings', array() );
-        $merged   = wp_parse_args( $existing, $defaults );
+    /**
+     * Plugin activation callback
+     */
+    public function activate() {
+        $defaults = self::get_defaults();
+        $existing = get_option( 'gowa_whatsapp_settings', array() );$merged   = wp_parse_args( $existing,$defaults );
         update_option( 'gowa_whatsapp_settings', $merged );
     }
 }
