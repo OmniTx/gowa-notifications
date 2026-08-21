@@ -52,6 +52,8 @@ class GOWA_WhatsApp_Plugin {
 
         if ( is_admin() ) {
             require_once GOWA_PLUGIN_DIR . 'admin/class-gowa-admin.php';
+            require_once GOWA_PLUGIN_DIR . 'includes/class-gowa-updater.php';
+            new GOWA_GitHub_Updater( __FILE__, 'OmniTx/gowa-whatsapp-notifications', GOWA_VERSION );
         }
     }
 
