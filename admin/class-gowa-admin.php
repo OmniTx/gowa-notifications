@@ -91,7 +91,6 @@ class GOWA_Admin {
         $plugin_version  = defined( 'GOWA_VERSION' ) ? GOWA_VERSION : '1.3.3';
         $export_settings = $settings;
 
-        // Base64 encode the password so it's not plain text in the JSON export
         if ( ! empty( $export_settings['auth_pass'] ) ) {
             $export_settings['auth_pass'] = base64_encode( $export_settings['auth_pass'] );
         }
@@ -163,7 +162,6 @@ class GOWA_Admin {
                     } elseif ( $key === 'auth_pass' ) {
                         $raw_pass = trim( $settings[ $key ] );
                         if ( ! empty( $raw_pass ) ) {
-                            // Decode base64 if it's encoded, otherwise keep plain string
                             $decoded = base64_decode( $raw_pass, true );
                             if ( false !== $decoded && base64_encode( $decoded ) === $raw_pass ) {
                                 $raw_pass = $decoded;
