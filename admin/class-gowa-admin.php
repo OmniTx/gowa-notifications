@@ -87,15 +87,21 @@ class GOWA_Admin {
             return;
         }
 
-        $settings       = get_option( self::OPTION_NAME, array() );
-        $plugin_version = defined( 'GOWA_VERSION' ) ? GOWA_VERSION : '1.3.3';
+        $settings        = get_option( self::OPTION_NAME, array() );
+        $plugin_version  = defined( 'GOWA_VERSION' ) ? GOWA_VERSION : '1.3.3';
+        $export_settings = $settings;
+
+        // Base64 encode the password so it's not plain text in the JSON export
+        if ( ! empty( $export_settings['auth_pass'] ) ) {
+            $export_settings['auth_pass'] = base64_encode( $export_settings['auth_pass'] );
+        }
 
         $export_payload = array(
             'plugin'      => 'gowa-whatsapp-notifications',
             'version'     => $plugin_version,
             'exported_at' => current_time( 'mysql' ),
             'site_url'    => site_url(),
-            'settings'    => $settings,
+            'settings'    => $export_settings,
         );
 
         $filename = 'gowa-whatsapp-settings-' . date( 'Y-m-d_H-i' ) . '.json';
@@ -152,8 +158,18 @@ class GOWA_Admin {
                         $sanitized[ $key ] = ! empty( $settings[ $key ] ) ? 1 : 0;
                     } elseif ( $key === 'api_url' ) {
                         $sanitized[ $key ] = esc_url_raw( trim( $settings[ $key ] ) );
-                    } elseif ( in_array( $key, array( 'device_id', 'auth_user', 'auth_pass', 'admin_phone' ) ) ) {
+                    } elseif ( in_array( $key, array( 'device_id', 'auth_user', 'admin_phone' ) ) ) {
                         $sanitized[ $key ] = sanitize_text_field( trim( $settings[ $key ] ) );
+                    } elseif ( $key === 'auth_pass' ) {
+                        $raw_pass = trim( $settings[ $key ] );
+                        if ( ! empty( $raw_pass ) ) {
+                            // Decode base64 if it's encoded, otherwise keep plain string
+                            $decoded = base64_decode( $raw_pass, true );
+                            if ( false !== $decoded && base64_encode( $decoded ) === $raw_pass ) {
+                                $raw_pass = $decoded;
+                            }
+                        }
+                        $sanitized[ $key ] = sanitize_text_field( $raw_pass );
                     } elseif ( $key === 'default_country_code' ) {
                         $sanitized[ $key ] = preg_replace( '/[^0-9]/', '', trim( $settings[ $key ] ) );
                     } else {
