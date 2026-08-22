@@ -63,6 +63,11 @@ Developed by [Imran Ahmed](https://imran.mvp.bd) ([omnitx](https://github.com/om
 = 1.2.0 =
 * Initial public release.
 
+== Third-Party Service Disclosure ==
+This plugin connects to a self-hosted instance of GOWA (Go WhatsApp Web Multi-Device REST API gateway) to dispatch WhatsApp notifications.
+- GOWA Open Source Server: https://github.com/aldinokemal/go-whatsapp-web-multidevice
+- Service Endpoint: Configured by the site administrator in plugin settings.
+
 == Author ==
 
 * **Author**: Imran Ahmed
