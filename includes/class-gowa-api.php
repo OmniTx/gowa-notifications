@@ -1,6 +1,6 @@
 <?php
 /**
- * GOWA API Client & Universal Diagnostics
+ * GOWA API Client, Async Queue & Universal Diagnostics
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -35,12 +35,57 @@ class GOWA_API {
     }
 
     /**
-     * Send a WhatsApp message via GOWA API
+     * Enqueue a WhatsApp message to be sent asynchronously in the background via Action Scheduler.
+     * Prevents customer checkout delay or timeouts. Falls back to direct send if Action Scheduler is unavailable.
+     *
+     * @param string $raw_phone Recipient phone number
+     * @param string $message Message text
+     * @param WC_Order|null $order Optional order object
+     * @param string $event_label Event context (e.g. order_received, order_completed)
+     * @return array
+     */
+    public static function queue_message( $raw_phone, $message, $order = null, $event_label = 'notification' ) {
+        $order_id = ( $order && method_exists( $order, 'get_id' ) ) ? $order->get_id() : 0;
+
+        // Use WooCommerce Action Scheduler for background processing
+        if ( function_exists( 'as_enqueue_async_action' ) ) {
+            as_enqueue_async_action(
+                'gowa_async_send_message',
+                array(
+                    'raw_phone'   => $raw_phone,
+                    'message'     => $message,
+                    'order_id'    => $order_id,
+                    'event_label' => $event_label,
+                ),
+                'gowa-notifications'
+            );
+
+            return array(
+                'success' => true,
+                'queued'  => true,
+                'message' => __( 'Message queued for background delivery.', 'gowa-notifications' ),
+            );
+        }
+
+        // Direct fallback if Action Scheduler is not loaded
+        return self::send_message( $raw_phone, $message, $order, $event_label );
+    }
+
+    /**
+     * Background execution callback for Action Scheduler
+     */
+    public static function handle_async_send( $raw_phone, $message, $order_id = 0, $event_label = 'notification' ) {
+        $order = ( $order_id > 0 && function_exists( 'wc_get_order' ) ) ? wc_get_order( $order_id ) : null;
+        return self::send_message( $raw_phone, $message, $order, $event_label );
+    }
+
+    /**
+     * Send a WhatsApp message via GOWA API immediately
      *
      * @param string $raw_phone Recipient phone number
      * @param string $message Message text
      * @param WC_Order|null $order Optional order object for logging
-     * @param string $event_label Event context (e.g. order_received, order_completed)
+     * @param string $event_label Event context
      * @return array
      */
     public static function send_message( $raw_phone, $message, $order = null, $event_label = 'notification' ) {
@@ -52,7 +97,7 @@ class GOWA_API {
 
         $phone = self::format_phone( $raw_phone );
         if ( empty( $phone ) ) {
-            $err = sprintf( __( 'Invalid recipient phone number: %s', 'gowa-whatsapp' ), esc_html( $raw_phone ) );
+            $err = sprintf( __( 'Invalid recipient phone number: %s', 'gowa-notifications' ), esc_html( $raw_phone ) );
             if ( $order && method_exists( $order, 'add_order_note' ) ) {
                 $order->add_order_note( "❌ WhatsApp Error ({$event_label}): " . $err );
             }
@@ -63,7 +108,7 @@ class GOWA_API {
         }
 
         if ( empty( $config['api_url'] ) ) {
-            $err = __( 'GOWA API URL is not configured. Please configure your settings in Settings > GOWA WhatsApp.', 'gowa-whatsapp' );
+            $err = __( 'GOWA API URL is not configured. Please configure your settings in Settings > GOWA Notifications.', 'gowa-notifications' );
             if ( $order && method_exists( $order, 'add_order_note' ) ) {
                 $order->add_order_note( "❌ WhatsApp Error ({$event_label}): " . $err );
             }
@@ -96,7 +141,7 @@ class GOWA_API {
 
         $response = wp_remote_post( $endpoint, array(
             'method'      => 'POST',
-            'timeout'     => 20,
+            'timeout'     => 15,
             'httpversion' => '1.0',
             'blocking'    => true,
             'headers'     => $headers,
@@ -118,7 +163,7 @@ class GOWA_API {
             self::log_error( 'GOWA API Connection Failed: ' . $error_msg );
             return array(
                 'success' => false,
-                'message' => sprintf( __( 'Connection failed to %s: %s', 'gowa-whatsapp' ), esc_url( $endpoint ), $error_msg ),
+                'message' => sprintf( __( 'Connection failed to %s: %s', 'gowa-notifications' ), esc_url( $endpoint ), $error_msg ),
                 'debug'   => array( 'endpoint' => $endpoint, 'error' => $error_msg ),
             );
         }
@@ -146,7 +191,7 @@ class GOWA_API {
 
             return array(
                 'success'    => true,
-                'message'    => sprintf( __( 'WhatsApp message delivered to %s (ID: %s)', 'gowa-whatsapp' ), esc_html( $phone ), esc_html( $msg_id ) ),
+                'message'    => sprintf( __( 'WhatsApp message delivered to %s (ID: %s)', 'gowa-notifications' ), esc_html( $phone ), esc_html( $msg_id ) ),
                 'message_id' => $msg_id,
                 'data'       => $data,
             );
@@ -181,7 +226,7 @@ class GOWA_API {
         if ( empty( $api_url ) ) {
             return array(
                 'success' => false,
-                'message' => __( 'GOWA API URL is empty. Please enter your server URL.', 'gowa-whatsapp' ),
+                'message' => __( 'GOWA API URL is empty. Please enter your server URL.', 'gowa-notifications' ),
             );
         }
 
@@ -194,7 +239,6 @@ class GOWA_API {
             $headers['X-Device-Id'] = $config['device_id'];
         }
 
-        // Endpoints to check
         $test_paths = array(
             '/app/status',
             '/app/devices',
@@ -232,7 +276,7 @@ class GOWA_API {
             if ( $code === 401 ) {
                 return array(
                     'success'  => false,
-                    'message'  => __( 'Authentication Failed (401 Unauthorized). Please check your Basic Auth Username and Password.', 'gowa-whatsapp' ),
+                    'message'  => __( 'Authentication Failed (401 Unauthorized). Please check your Basic Auth Username and Password.', 'gowa-notifications' ),
                     'endpoint' => $url,
                 );
             }
@@ -247,7 +291,7 @@ class GOWA_API {
         if ( ! empty( $connected_endpoint ) ) {
             return array(
                 'success'   => true,
-                'message'   => __( 'Connected to GOWA Server successfully!', 'gowa-whatsapp' ),
+                'message'   => __( 'Connected to GOWA Server successfully!', 'gowa-notifications' ),
                 'api_url'   => $api_url,
                 'endpoint'  => $connected_endpoint,
                 'device_id' => $config['device_id'],
@@ -257,7 +301,7 @@ class GOWA_API {
 
         return array(
             'success' => false,
-            'message' => sprintf( __( 'Could not connect to GOWA server at %s. %s', 'gowa-whatsapp' ), esc_url( $api_url ), ( $last_error ? 'Error: ' . $last_error : 'Server returned an invalid HTTP response.' ) ),
+            'message' => sprintf( __( 'Could not connect to GOWA server at %s. %s', 'gowa-notifications' ), esc_url( $api_url ), ( $last_error ? 'Error: ' . $last_error : 'Server returned an invalid HTTP response.' ) ),
             'api_url' => $api_url,
             'error'   => $last_error,
         );
@@ -265,20 +309,6 @@ class GOWA_API {
 
     /**
      * Universal Phone Number Normalizer
-     * 
-     * Handles:
-     * 1. JID strings (e.g. 880123456789@s.whatsapp.net) -> returns trimmed
-     * 2. Leading '+' (e.g. +880123456789, +14155552671) -> strips '+'
-     * 3. Leading '00' (e.g. 00880123456789) -> strips '00'
-     * 4. Leading '0' with Configured Country Code:
-     *    - BD (880): 0123456789 -> 880123456789
-     *    - ID (62): 08123456789 -> 628123456789
-     *    - UK (44): 07123456789 -> 447123456789
-     *    - IN (91): 09876543210 -> 919876543210
-     * 5. Plain International numbers (e.g. 880123456789, 14155552671) -> untouched
-     *
-     * @param string $phone
-     * @return string
      */
     public static function format_phone( $phone ) {
         if ( strpos( $phone, '@' ) !== false ) {
@@ -305,12 +335,9 @@ class GOWA_API {
         return $cleaned . '@s.whatsapp.net';
     }
 
-    /**
-     * Log to WP debug log
-     */
     public static function log_error( $message ) {
         if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-            error_log( '[GOWA WhatsApp] ' . $message );
+            error_log( '[GOWA Notifications] ' . $message );
         }
     }
 }

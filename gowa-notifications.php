@@ -1,12 +1,12 @@
 <?php
 /**
- * Plugin Name:       GOWA WhatsApp Notifications
- * Plugin URI:        https://github.com/omnitx/gowa-whatsapp-notifications
- * Description:       Automated and custom WhatsApp notifications for WordPress and WooCommerce powered by the self-hosted GOWA (Go WhatsApp Web Multi-Device) REST API gateway.
- * Version:           1.3.3
+ * Plugin Name:       GOWA Notifications
+ * Plugin URI:        https://github.com/omnitx/gowa-notifications
+ * Description:       Automated and custom notifications for WordPress and WooCommerce powered by the self-hosted GOWA (Go WhatsApp Web Multi-Device) REST API gateway.
+ * Version:           1.4.0
  * Author:            Imran Ahmed
  * Author URI:        https://imran.mvp.bd
- * Text Domain:       gowa-whatsapp
+ * Text Domain:       gowa-notifications
  * Domain Path:       /languages
  * Requires at least: 5.6
  * Requires PHP:      7.4
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'GOWA_VERSION', '1.3.3' );
+define( 'GOWA_VERSION', '1.4.0' );
 define( 'GOWA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'GOWA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'GOWA_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -38,7 +38,8 @@ class GOWA_WhatsApp_Plugin {
     }
 
     private function __construct() {
-        $this->load_dependencies();$this->init_hooks();
+        $this->load_dependencies();
+        $this->init_hooks();
     }
 
     private function load_dependencies() {
@@ -59,6 +60,9 @@ class GOWA_WhatsApp_Plugin {
         add_action( 'before_woocommerce_init', array( $this, 'declare_hpos_compatibility' ) );
         add_filter( 'plugin_action_links_' . GOWA_PLUGIN_BASENAME, array( $this, 'add_action_links' ) );
         
+        // Action Scheduler asynchronous background worker
+        add_action( 'gowa_async_send_message', array( 'GOWA_API', 'handle_async_send' ), 10, 4 );
+
         register_activation_hook( __FILE__, array( $this, 'activate' ) );
     }
 
@@ -69,11 +73,12 @@ class GOWA_WhatsApp_Plugin {
     }
 
     public function load_textdomain() {
-        load_plugin_textdomain( 'gowa-whatsapp', false, dirname( GOWA_PLUGIN_BASENAME ) . '/languages' );
+        load_plugin_textdomain( 'gowa-notifications', false, dirname( GOWA_PLUGIN_BASENAME ) . '/languages' );
     }
 
-    public function add_action_links( $links ) {$settings_link = '<a href="' . admin_url( 'options-general.php?page=gowa-whatsapp' ) . '">' . __( 'Settings', 'gowa-whatsapp' ) . '</a>';
-        array_unshift( $links,$settings_link );
+    public function add_action_links( $links ) {
+        $settings_link = '<a href="' . admin_url( 'options-general.php?page=gowa-notifications' ) . '">' . __( 'Settings', 'gowa-notifications' ) . '</a>';
+        array_unshift( $links, $settings_link );
         return $links;
     }
 
@@ -107,17 +112,15 @@ class GOWA_WhatsApp_Plugin {
         );
     }
 
-    /**
-     * Plugin activation callback
-     */
     public function activate() {
         $defaults = self::get_defaults();
-        $existing = get_option( 'gowa_whatsapp_settings', array() );$merged   = wp_parse_args( $existing,$defaults );
+        $existing = get_option( 'gowa_whatsapp_settings', array() );
+        $merged   = wp_parse_args( $existing, $defaults );
         update_option( 'gowa_whatsapp_settings', $merged );
     }
 }
 
-function gowa_whatsapp() {
+function gowa_notifications() {
     return GOWA_WhatsApp_Plugin::instance();
 }
-gowa_whatsapp();
+gowa_notifications();

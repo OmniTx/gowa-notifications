@@ -31,10 +31,10 @@ jobs:
 
       - name: Package Plugin Archive
         run: |
-          mkdir -p build/gowa-whatsapp-notifications
+          mkdir -p build/gowa-notifications
           
           # Copy only required plugin files into build directory
-          rsync -av --progress ./ build/gowa-whatsapp-notifications/ \
+          rsync -av --progress ./ build/gowa-notifications/ \
             --exclude '.git' \
             --exclude '.github' \
             --exclude '.vscode' \
@@ -43,15 +43,15 @@ jobs:
           
           # Create installable WordPress zip
           cd build
-          zip -r ../gowa-whatsapp-notifications.zip gowa-whatsapp-notifications/
+          zip -r ../gowa-notifications.zip gowa-notifications/
           cd ..
           
-          ls -lh gowa-whatsapp-notifications.zip
+          ls -lh gowa-notifications.zip
 
       - name: Create GitHub Release & Upload Asset
         uses: softprops/action-gh-release@v2
         with:
-          files: gowa-whatsapp-notifications.zip
+          files: gowa-notifications.zip
           body: ${{ steps.tag_notes.outputs.notes }}
           draft: false
           prerelease: false

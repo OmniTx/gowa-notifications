@@ -20,8 +20,8 @@ class GOWA_GitHub_Updater {
 
     private $file;
     private $basename;
-    private $slug;               // e.g. gowa-whatsapp-notifications
-    private $github_repo;        // e.g. OmniTx/gowa-whatsapp-notifications
+    private $slug;               // e.g. gowa-notifications
+    private $github_repo;        // e.g. OmniTx/gowa-notifications
     private $current_version;
     private $plugin_data;
     private $github_response;    // cached decoded API response for this request
@@ -98,7 +98,7 @@ class GOWA_GitHub_Updater {
     }
 
     /**
-     * Prefer the CI-built release asset (e.g. gowa-whatsapp-notifications.zip,
+     * Prefer the CI-built release asset (e.g. gowa-notifications.zip,
      * uploaded by release.yml with the correct folder structure already inside)
      * over GitHub's raw zipball, which includes .github/, .git metadata via the
      * commit snapshot, and extracts into a hash-suffixed folder name.
@@ -193,7 +193,7 @@ class GOWA_GitHub_Updater {
 
     /**
      * Hook: upgrader_source_selection
-     * GitHub's zipball extracts to a folder like "OmniTx-gowa-whatsapp-notifications-abc1234".
+     * GitHub's zipball extracts to a folder like "OmniTx-gowa-notifications-abc1234".
      * Rename it back to the plugin's real slug so WordPress can find it after install.
      */
     public function fix_source_dir( $source, $remote_source, $upgrader, $hook_extra = array() ) {
