@@ -3,7 +3,7 @@ Contributors: omnitx, imranahmed
 Donate link: https://imran.mvp.bd
 Tags: notifications, woocommerce alerts, order notifications, gateway, messaging
 Requires at least: 5.6
-Tested up to: 6.7
+Tested up to: 7.1
 Requires PHP: 7.4
 Stable tag: 1.4.0
 License: GPLv2 or later
@@ -55,6 +55,7 @@ This plugin connects to a self-hosted instance of GOWA (Go WhatsApp Web Multi-De
 * Rebrand: Renamed plugin to GOWA Notifications to abide by WordPress.org trademark guidelines.
 * Fix: Formatted `{shipping_address}` tag to clean plain text (removed HTML `<br/>` tags).
 * Security: Obfuscated password in JSON settings export via Base64 encoding.
+* GitHub Updater Support: Integrated automatic updates for standalone GitHub installations.
 
 = 1.3.3 =
 * Feature: Added Settings Export & Import tool to backup and restore configurations as JSON.

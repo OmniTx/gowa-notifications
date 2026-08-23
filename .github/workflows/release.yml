@@ -29,23 +29,20 @@ jobs:
           echo "$NOTES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Package Plugin Archive
+      - name: Package GitHub Release (Includes Updater)
         run: |
           mkdir -p build/gowa-notifications
-          
-          # Copy only required plugin files into build directory
           rsync -av --progress ./ build/gowa-notifications/ \
             --exclude '.git' \
             --exclude '.github' \
             --exclude '.vscode' \
             --exclude 'build' \
-            --exclude '.gitignore'
+            --exclude '.gitignore' \
+            --exclude '*.zip'
           
-          # Create installable WordPress zip
           cd build
           zip -r ../gowa-notifications.zip gowa-notifications/
           cd ..
-          
           ls -lh gowa-notifications.zip
 
       - name: Create GitHub Release & Upload Asset

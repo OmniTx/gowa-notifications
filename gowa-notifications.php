@@ -50,6 +50,11 @@ class GOWA_WhatsApp_Plugin {
             require_once GOWA_PLUGIN_DIR . 'includes/class-gowa-woocommerce.php';
         }
 
+        // Only load the GitHub updater if bundled (Standalone GitHub builds)
+        if ( is_admin() && file_exists( GOWA_PLUGIN_DIR . 'includes/class-gowa-updater.php' ) ) {
+            require_once GOWA_PLUGIN_DIR . 'includes/class-gowa-updater.php';
+        }
+
         if ( is_admin() ) {
             require_once GOWA_PLUGIN_DIR . 'admin/class-gowa-admin.php';
         }
