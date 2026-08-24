@@ -75,6 +75,7 @@ class GOWA_Admin {
 
         // WooCommerce notifications
         if ( isset( $_POST['gowa_tab_section'] ) && $_POST['gowa_tab_section'] === 'wc' ) {
+            $sanitized['async_delay_seconds']      = isset( $input['async_delay_seconds'] ) ? max( 0, (int) $input['async_delay_seconds'] ) : 0;
             $sanitized['enable_wc_admin_order']    = ! empty( $input['enable_wc_admin_order'] ) ? 1 : 0;
             $sanitized['wc_admin_order_msg']       = sanitize_textarea_field( $input['wc_admin_order_msg'] ?? '' );
             $sanitized['enable_wc_cust_process']   = ! empty( $input['enable_wc_cust_process'] ) ? 1 : 0;
@@ -158,13 +159,13 @@ class GOWA_Admin {
 
         $settings = isset( $data['settings'] ) && is_array( $data['settings'] ) ? $data['settings'] : $data;
 
-        if ( ! empty( $settings ) && is_array( $settings ) ) {
+        if ( is_array( $settings ) ) {
             $allowed_keys = array(
-                'api_url', 'device_id', 'auth_user', 'auth_pass', 'default_country_code', 'admin_phone',
+                'api_url', 'device_id', 'auth_user', 'auth_pass', 'admin_phone', 'default_country_code',
                 'enable_wp_user_reg', 'wp_user_reg_msg', 'enable_wp_comment', 'wp_comment_msg',
                 'enable_wc_admin_order', 'wc_admin_order_msg', 'enable_wc_cust_process', 'wc_cust_process_msg',
                 'enable_wc_cust_complete', 'wc_cust_complete_msg', 'enable_wc_cust_cancelled', 'wc_cust_cancelled_msg',
-                'enable_wc_low_stock', 'wc_low_stock_msg'
+                'enable_wc_low_stock', 'wc_low_stock_msg', 'async_delay_seconds',
             );
 
             $sanitized = array();
@@ -172,6 +173,8 @@ class GOWA_Admin {
                 if ( isset( $settings[ $key ] ) ) {
                     if ( in_array( $key, array( 'enable_wp_user_reg', 'enable_wp_comment', 'enable_wc_admin_order', 'enable_wc_cust_process', 'enable_wc_cust_complete', 'enable_wc_cust_cancelled', 'enable_wc_low_stock' ) ) ) {
                         $sanitized[ $key ] = ! empty( $settings[ $key ] ) ? 1 : 0;
+                    } elseif ( $key === 'async_delay_seconds' ) {
+                        $sanitized[ $key ] = max( 0, (int) $settings[ $key ] );
                     } elseif ( $key === 'api_url' ) {
                         $sanitized[ $key ] = esc_url_raw( trim( $settings[ $key ] ) );
                     } elseif ( in_array( $key, array( 'device_id', 'auth_user', 'admin_phone' ) ) ) {
@@ -359,6 +362,13 @@ class GOWA_Admin {
                         <input type="hidden" name="gowa_tab_section" value="wc">
 
                         <table class="form-table" role="presentation">
+                            <tr>
+                                <th scope="row"><label for="async_delay_seconds"><?php esc_html_e( 'Background Delay (Seconds)', 'gowa-notifications' ); ?></label></th>
+                                <td>
+                                    <input name="gowa_settings[async_delay_seconds]" type="number" step="1" min="0" id="async_delay_seconds" value="<?php echo esc_attr( $settings['async_delay_seconds'] ?? 0 ); ?>" class="small-text">
+                                    <p class="description"><?php esc_html_e( 'Delay in seconds before sending automated notifications. Set to 0 for instant Direct Dispatch (Recommended). If set to > 0, notifications are pushed to the WooCommerce Action Scheduler background queue so checkout speed is completely unaffected.', 'gowa-notifications' ); ?></p>
+                                </td>
+                            </tr>
                             <tr>
                                 <th scope="row"><?php esc_html_e( 'Client: Order Processing Message', 'gowa-notifications' ); ?></th>
                                 <td>

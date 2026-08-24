@@ -124,6 +124,7 @@ class GOWA_WhatsApp_Plugin {
             'wc_cust_cancelled_msg'   => "Hello {customer_name},\n\nYour order *#{order_id}* at {site_name} has been cancelled. If you have any questions, please contact our support team.",
             'enable_wc_low_stock'     => 0,
             'wc_low_stock_msg'        => "⚠️ *Low Stock Alert*\n\nProduct: {product_name} (ID: {product_id})\nRemaining Stock: {stock_quantity}",
+            'async_delay_seconds'     => 0,
         );
     }
 

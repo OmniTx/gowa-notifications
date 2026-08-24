@@ -102,7 +102,7 @@ class GOWA_WooCommerce {
             if ( ! empty( $customer_phone ) ) {
                 $default_tpl = ! empty( $settings['wc_cust_process_msg'] ) ? $settings['wc_cust_process_msg'] : "Hello {customer_name},\n\nThank you for your order *#{order_id}* at {site_name}! We have received your order and it is currently being processed.\n\nTotal: {order_total}\nItems: {order_items}\n\nWe will contact you shortly for delivery.";
                 $message     = $this->parse_order_tags( $default_tpl, $order );
-                GOWA_API::send_message( $customer_phone, $message, $order, 'order_received' );
+                GOWA_API::schedule_message( $customer_phone, $message, $order, 'order_received', $settings['async_delay_seconds'] ?? 0 );
             }
         }
 
@@ -113,7 +113,7 @@ class GOWA_WooCommerce {
             
             $admin_phones = array_filter( array_map( 'trim', explode( ',', $settings['admin_phone'] ) ) );
             foreach ( $admin_phones as $phone ) {
-                GOWA_API::send_message( $phone, $admin_msg, $order, 'admin_new_order' );
+                GOWA_API::schedule_message( $phone, $admin_msg, $order, 'admin_new_order', $settings['async_delay_seconds'] ?? 0 );
             }
         }
 
@@ -153,7 +153,7 @@ class GOWA_WooCommerce {
         $template = ! empty( $settings['wc_cust_complete_msg'] ) ? $settings['wc_cust_complete_msg'] : "Hello {customer_name},\n\nYour order *#{order_id}* has been completed! 🎉\n\nThank you for shopping with {site_name}.";
         $message  = $this->parse_order_tags( $template, $order );
 
-        GOWA_API::send_message( $customer_phone, $message, $order, 'order_completed' );
+        GOWA_API::schedule_message( $customer_phone, $message, $order, 'order_completed', $settings['async_delay_seconds'] ?? 0 );
     }
 
     public function on_order_cancelled( $order_id, $order = null ) {
@@ -183,7 +183,7 @@ class GOWA_WooCommerce {
         $template = ! empty( $settings['wc_cust_cancelled_msg'] ) ? $settings['wc_cust_cancelled_msg'] : "Hello {customer_name},\n\nYour order *#{order_id}* at {site_name} has been cancelled.";
         $message  = $this->parse_order_tags( $template, $order );
 
-        GOWA_API::send_message( $customer_phone, $message, $order, 'order_cancelled' );
+        GOWA_API::schedule_message( $customer_phone, $message, $order, 'order_cancelled', $settings['async_delay_seconds'] ?? 0 );
     }
 
     public function on_low_stock( $product ) {
@@ -207,7 +207,7 @@ class GOWA_WooCommerce {
         $message = str_replace( array_keys( $tags ), array_values( $tags ), $template );
         $admin_phones = array_filter( array_map( 'trim', explode( ',', $settings['admin_phone'] ) ) );
         foreach ( $admin_phones as $phone ) {
-            GOWA_API::send_message( $phone, $message, null, 'low_stock' );
+            GOWA_API::schedule_message( $phone, $message, null, 'low_stock', $settings['async_delay_seconds'] ?? 0 );
         }
     }
 

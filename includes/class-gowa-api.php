@@ -35,21 +35,24 @@ class GOWA_API {
     }
 
     /**
-     * Enqueue a WhatsApp message to be sent asynchronously in the background via Action Scheduler.
+     * Schedule a WhatsApp message to be sent asynchronously in the background via Action Scheduler.
      * Prevents customer checkout delay or timeouts. Falls back to direct send if Action Scheduler is unavailable.
      *
      * @param string $raw_phone Recipient phone number
      * @param string $message Message text
      * @param WC_Order|null $order Optional order object
      * @param string $event_label Event context (e.g. order_received, order_completed)
+     * @param int $delay_seconds Seconds to delay before sending
      * @return array
      */
-    public static function queue_message( $raw_phone, $message, $order = null, $event_label = 'notification' ) {
+    public static function schedule_message( $raw_phone, $message, $order = null, $event_label = 'notification', $delay_seconds = 0 ) {
         $order_id = ( $order && method_exists( $order, 'get_id' ) ) ? $order->get_id() : 0;
+        $delay_seconds = (int) $delay_seconds;
 
-        // Use WooCommerce Action Scheduler for background processing
-        if ( function_exists( 'as_enqueue_async_action' ) ) {
-            as_enqueue_async_action(
+        // Use WooCommerce Action Scheduler for background processing if delay is requested
+        if ( $delay_seconds > 0 && function_exists( 'as_schedule_single_action' ) ) {
+            as_schedule_single_action(
+                time() + $delay_seconds,
                 'gowa_async_send_message',
                 array(
                     'raw_phone'   => $raw_phone,
@@ -63,7 +66,7 @@ class GOWA_API {
             return array(
                 'success' => true,
                 'queued'  => true,
-                'message' => __( 'Message queued for background delivery.', 'gowa-notifications' ),
+                'message' => sprintf( __( 'Message scheduled for background delivery in %d seconds.', 'gowa-notifications' ), $delay_seconds ),
             );
         }
 
