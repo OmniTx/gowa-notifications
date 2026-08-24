@@ -10,8 +10,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 class GOWA_WooCommerce {
 
     public function __construct() {
-        // Trigger after checkout is fully processed (billing phone is available)
+        // Order receipt triggers — cover ALL checkout types & payment methods:
+        // 1. Classic shortcode checkout
         add_action( 'woocommerce_checkout_order_processed', array( $this, 'on_new_order_receipt' ), 20, 1 );
+        // 2. WooCommerce Block Checkout (default in WC 8+)
+        add_action( 'woocommerce_store_api_checkout_order_processed', array( $this, 'on_new_order_receipt_from_object' ), 20, 1 );
+        // 3. Status transitions for instant payment gateways / COD / Bank transfers
+        add_action( 'woocommerce_order_status_processing', array( $this, 'on_new_order_receipt' ), 20, 1 );
+        add_action( 'woocommerce_order_status_on-hold', array( $this, 'on_new_order_receipt' ), 20, 1 );
+        add_action( 'woocommerce_payment_complete', array( $this, 'on_new_order_receipt' ), 20, 1 );
+        // 4. Thank you page fallback
+        add_action( 'woocommerce_thankyou', array( $this, 'on_new_order_receipt' ), 20, 1 );
+
         add_action( 'woocommerce_order_status_completed', array( $this, 'on_order_completed' ), 20, 1 );
         add_action( 'woocommerce_order_status_cancelled', array( $this, 'on_order_cancelled' ), 20, 2 );
 
@@ -29,6 +39,15 @@ class GOWA_WooCommerce {
         add_action( 'wp_ajax_gowa_send_order_custom_msg', array( $this, 'ajax_send_order_custom_msg' ) );
     }
 
+    /**
+     * Block Checkout passes the WC_Order object, not the ID
+     */
+    public function on_new_order_receipt_from_object( $order ) {
+        if ( is_object( $order ) && method_exists( $order, 'get_id' ) ) {
+            $this->on_new_order_receipt( $order->get_id() );
+        }
+    }
+
     public function add_order_actions( $actions ) {
         $actions['test_whatsapp_receipt']   = __( 'Send WhatsApp Receipt (Order Received)', 'gowa-notifications' );
         $actions['test_whatsapp_completed'] = __( 'Send WhatsApp (Order Completed)', 'gowa-notifications' );
@@ -37,7 +56,7 @@ class GOWA_WooCommerce {
 
     public function process_action_test_receipt( $order ) {
         $order_id = is_numeric( $order ) ? $order : $order->get_id();
-        $this->on_new_order_receipt( $order_id );
+        $this->on_new_order_receipt( $order_id, true );
         add_action( 'admin_notices', function() {
             echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'WhatsApp "Order Received" message triggered! Check Order Notes for delivery status.', 'gowa-notifications' ) . '</p></div>';
         });
@@ -51,16 +70,29 @@ class GOWA_WooCommerce {
         });
     }
 
-    public function on_new_order_receipt( $order_id ) {
-        $settings = get_option( 'gowa_whatsapp_settings', array() );
+    public function on_new_order_receipt( $order_id, $force = false ) {
+        // In-memory deduplication to prevent duplicate triggers within the same request
+        static $processed_orders = array();
+        if ( ! $force && isset( $processed_orders[ $order_id ] ) ) {
+            return;
+        }
+        $processed_orders[ $order_id ] = true;
+
         $order = wc_get_order( $order_id );
-        if ( ! $order ) {
+        if ( ! $order || ! is_object( $order ) ) {
             return;
         }
 
+        // Deduplication — prevent double sends when multiple hooks fire across requests
+        if ( ! $force && method_exists( $order, 'get_meta' ) && $order->get_meta( '_gowa_receipt_sent', true ) ) {
+            return;
+        }
+
+        $settings = get_option( 'gowa_whatsapp_settings', array() );
+
         // 1. Send Receipt to Client in Background Queue
         if ( ! empty( $settings['enable_wc_cust_process'] ) ) {
-            $customer_phone = $order->get_billing_phone();
+            $customer_phone = method_exists( $order, 'get_billing_phone' ) ? $order->get_billing_phone() : '';
             if ( ! empty( $customer_phone ) ) {
                 $default_tpl = ! empty( $settings['wc_cust_process_msg'] ) ? $settings['wc_cust_process_msg'] : "Hello {customer_name},\n\nThank you for your order *#{order_id}* at {site_name}! We have received your order and it is currently being processed.\n\nTotal: {order_total}\nItems: {order_items}\n\nWe will contact you shortly for delivery.";
                 $message     = $this->parse_order_tags( $default_tpl, $order );
@@ -77,6 +109,14 @@ class GOWA_WooCommerce {
             foreach ( $admin_phones as $phone ) {
                 GOWA_API::queue_message( $phone, $admin_msg, $order, 'admin_new_order' );
             }
+        }
+
+        // Mark receipt as sent in order metadata
+        if ( method_exists( $order, 'update_meta_data' ) && method_exists( $order, 'save_meta_data' ) ) {
+            $order->update_meta_data( '_gowa_receipt_sent', 1 );
+            $order->save_meta_data();
+        } else {
+            update_post_meta( $order_id, '_gowa_receipt_sent', 1 );
         }
     }
 

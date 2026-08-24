@@ -51,7 +51,8 @@ This plugin connects to a self-hosted instance of GOWA (Go WhatsApp Web Multi-De
 == Changelog ==
 
 = 1.4.4 =
-* Fix: Replaced `woocommerce_new_order` hook with `woocommerce_checkout_order_processed` to ensure billing phone is available before sending notifications.
+* Fix: Multi-hook trigger covering Classic Checkout, WooCommerce Block Checkout (`woocommerce_store_api_checkout_order_processed`), and status transitions (Processing, On-Hold, Payment Complete, Thankyou).
+* Fix: In-memory and metadata deduplication to ensure order notifications fire reliably exactly once without duplicates.
 * Fix: Added HPOS metabox safety guard to prevent 500 errors on WooCommerce setups using Custom Order Tables.
 * Includes all features from 1.4.1 (multi-admin routing, dynamic placeholders, rich updater details).
 

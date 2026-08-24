@@ -46,8 +46,10 @@ class GOWA_WhatsApp_Plugin {
         require_once GOWA_PLUGIN_DIR . 'includes/class-gowa-api.php';
         require_once GOWA_PLUGIN_DIR . 'includes/class-gowa-notifications.php';
         
-        if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) || class_exists( 'WooCommerce' ) ) {
+        if ( class_exists( 'WooCommerce' ) || in_array( 'woocommerce/woocommerce.php', (array) get_option( 'active_plugins', array() ), true ) ) {
             require_once GOWA_PLUGIN_DIR . 'includes/class-gowa-woocommerce.php';
+        } else {
+            add_action( 'plugins_loaded', array( $this, 'load_woocommerce_integration' ), 20 );
         }
 
         // Only load the GitHub updater if bundled (Standalone GitHub builds)
@@ -57,6 +59,14 @@ class GOWA_WhatsApp_Plugin {
 
         if ( is_admin() ) {
             require_once GOWA_PLUGIN_DIR . 'admin/class-gowa-admin.php';
+        }
+    }
+
+    public function load_woocommerce_integration() {
+        if ( class_exists( 'WooCommerce' ) && ! class_exists( 'GOWA_WooCommerce' ) ) {
+            if ( file_exists( GOWA_PLUGIN_DIR . 'includes/class-gowa-woocommerce.php' ) ) {
+                require_once GOWA_PLUGIN_DIR . 'includes/class-gowa-woocommerce.php';
+            }
         }
     }
 
