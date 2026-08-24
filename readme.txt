@@ -19,7 +19,7 @@ Developed by [Imran Ahmed](https://imran.mvp.bd) ([omnitx](https://github.com/om
 
 ### Key Features
 * **100% Self-Hosted & Private**: Uses your own self-hosted GOWA REST API gateway without recurring third-party subscriptions or Meta per-template charges.
-* **Asynchronous Background Queue**: Built-in integration with Action Scheduler ensures non-blocking, instantaneous checkout performance for store customers.
+* **Instant Direct Dispatch**: Ultra-fast synchronous HTTP dispatch with multi-hook fallback ensuring orders trigger notifications reliably without relying on WP-Cron or Action Scheduler queues.
 * **WooCommerce Order Notifications**:
   * Send receipt/processing notification to client upon order placement.
   * Send completion notification to client when order is completed.
