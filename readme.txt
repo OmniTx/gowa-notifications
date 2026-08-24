@@ -5,7 +5,7 @@ Tags: notifications, woocommerce alerts, order notifications, gateway, messaging
 Requires at least: 5.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.4.1
+Stable tag: 1.4.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -49,6 +49,11 @@ This plugin connects to a self-hosted instance of GOWA (Go WhatsApp Web Multi-De
 4. Verify your connection on the **Direct Client Message / Test** tab.
 
 == Changelog ==
+
+= 1.4.4 =
+* Fix: Replaced `woocommerce_new_order` hook with `woocommerce_checkout_order_processed` to ensure billing phone is available before sending notifications.
+* Fix: Added HPOS metabox safety guard to prevent 500 errors on WooCommerce setups using Custom Order Tables.
+* Includes all features from 1.4.1 (multi-admin routing, dynamic placeholders, rich updater details).
 
 = 1.4.1 =
 * Feature: Added multi-admin support (enter multiple phone numbers separated by commas).
