@@ -71,14 +71,19 @@ class GOWA_WooCommerce {
     }
 
     public function on_new_order_receipt( $order_id, $force = false ) {
-        // In-memory deduplication to prevent duplicate triggers within the same request
-        static $processed_orders = array();
-        if ( ! $force && isset( $processed_orders[ $order_id ] ) ) {
+        $actual_order_id = is_numeric( $order_id ) ? (int) $order_id : ( ( is_object( $order_id ) && method_exists( $order_id, 'get_id' ) ) ? $order_id->get_id() : 0 );
+        if ( $actual_order_id <= 0 ) {
             return;
         }
-        $processed_orders[ $order_id ] = true;
 
-        $order = wc_get_order( $order_id );
+        // In-memory deduplication to prevent duplicate triggers within the same request
+        static $processed_orders = array();
+        if ( ! $force && isset( $processed_orders[ $actual_order_id ] ) ) {
+            return;
+        }
+        $processed_orders[ $actual_order_id ] = true;
+
+        $order = wc_get_order( $actual_order_id );
         if ( ! $order || ! is_object( $order ) ) {
             return;
         }
@@ -88,7 +93,8 @@ class GOWA_WooCommerce {
             return;
         }
 
-        $settings = get_option( 'gowa_whatsapp_settings', array() );
+        $raw_settings = get_option( 'gowa_whatsapp_settings', array() );
+        $settings     = wp_parse_args( is_array( $raw_settings ) ? $raw_settings : array(), GOWA_WhatsApp_Plugin::get_defaults() );
 
         // 1. Send Receipt to Client
         if ( ! empty( $settings['enable_wc_cust_process'] ) ) {
@@ -116,18 +122,24 @@ class GOWA_WooCommerce {
             $order->update_meta_data( '_gowa_receipt_sent', 1 );
             $order->save_meta_data();
         } else {
-            update_post_meta( $order_id, '_gowa_receipt_sent', 1 );
+            update_post_meta( $actual_order_id, '_gowa_receipt_sent', 1 );
         }
     }
 
     public function on_order_completed( $order_id, $order = null ) {
-        $settings = get_option( 'gowa_whatsapp_settings', array() );
+        $actual_order_id = is_numeric( $order_id ) ? (int) $order_id : ( ( is_object( $order_id ) && method_exists( $order_id, 'get_id' ) ) ? $order_id->get_id() : 0 );
+        if ( $actual_order_id <= 0 ) {
+            return;
+        }
+
+        $raw_settings = get_option( 'gowa_whatsapp_settings', array() );
+        $settings     = wp_parse_args( is_array( $raw_settings ) ? $raw_settings : array(), GOWA_WhatsApp_Plugin::get_defaults() );
         if ( empty( $settings['enable_wc_cust_complete'] ) ) {
             return;
         }
 
         if ( ! $order ) {
-            $order = wc_get_order( $order_id );
+            $order = wc_get_order( $actual_order_id );
         }
         if ( ! $order || ! is_object( $order ) ) {
             return;
@@ -145,13 +157,19 @@ class GOWA_WooCommerce {
     }
 
     public function on_order_cancelled( $order_id, $order = null ) {
-        $settings = get_option( 'gowa_whatsapp_settings', array() );
+        $actual_order_id = is_numeric( $order_id ) ? (int) $order_id : ( ( is_object( $order_id ) && method_exists( $order_id, 'get_id' ) ) ? $order_id->get_id() : 0 );
+        if ( $actual_order_id <= 0 ) {
+            return;
+        }
+
+        $raw_settings = get_option( 'gowa_whatsapp_settings', array() );
+        $settings     = wp_parse_args( is_array( $raw_settings ) ? $raw_settings : array(), GOWA_WhatsApp_Plugin::get_defaults() );
         if ( empty( $settings['enable_wc_cust_cancelled'] ) ) {
             return;
         }
 
         if ( ! $order ) {
-            $order = wc_get_order( $order_id );
+            $order = wc_get_order( $actual_order_id );
         }
         if ( ! $order || ! is_object( $order ) ) {
             return;

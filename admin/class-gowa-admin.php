@@ -41,34 +41,51 @@ class GOWA_Admin {
             return;
         }
 
-        $input = isset( $_POST['gowa_settings'] ) ? (array) $_POST['gowa_settings'] : array();
-        $sanitized = array();
+        $existing  = get_option( self::OPTION_NAME, array() );
+        $input     = isset( $_POST['gowa_settings'] ) ? (array) $_POST['gowa_settings'] : array();
+        $sanitized = is_array( $existing ) ? $existing : array();
 
         // API settings
-        $sanitized['api_url']              = esc_url_raw( trim( $input['api_url'] ?? 'http://localhost:3000' ) );
-        $sanitized['device_id']            = sanitize_text_field( trim( $input['device_id'] ?? '' ) );
-        $sanitized['auth_user']            = sanitize_text_field( trim( $input['auth_user'] ?? '' ) );
-        $sanitized['auth_pass']            = sanitize_text_field( trim( $input['auth_pass'] ?? '' ) );
-        $sanitized['admin_phone']          = sanitize_text_field( trim( $input['admin_phone'] ?? '' ) );
-        $sanitized['default_country_code'] = preg_replace( '/[^0-9]/', '', trim( $input['default_country_code'] ?? '880' ) );
+        if ( isset( $input['api_url'] ) ) {
+            $sanitized['api_url'] = esc_url_raw( trim( $input['api_url'] ) );
+        }
+        if ( isset( $input['device_id'] ) ) {
+            $sanitized['device_id'] = sanitize_text_field( trim( $input['device_id'] ) );
+        }
+        if ( isset( $input['auth_user'] ) ) {
+            $sanitized['auth_user'] = sanitize_text_field( trim( $input['auth_user'] ) );
+        }
+        if ( isset( $input['auth_pass'] ) ) {
+            $sanitized['auth_pass'] = sanitize_text_field( trim( $input['auth_pass'] ) );
+        }
+        if ( isset( $input['admin_phone'] ) ) {
+            $sanitized['admin_phone'] = sanitize_text_field( trim( $input['admin_phone'] ) );
+        }
+        if ( isset( $input['default_country_code'] ) ) {
+            $sanitized['default_country_code'] = preg_replace( '/[^0-9]/', '', trim( $input['default_country_code'] ) );
+        }
 
         // WP notifications
-        $sanitized['enable_wp_user_reg'] = ! empty( $input['enable_wp_user_reg'] ) ? 1 : 0;
-        $sanitized['wp_user_reg_msg']    = sanitize_textarea_field( $input['wp_user_reg_msg'] ?? '' );
-        $sanitized['enable_wp_comment']  = ! empty( $input['enable_wp_comment'] ) ? 1 : 0;
-        $sanitized['wp_comment_msg']     = sanitize_textarea_field( $input['wp_comment_msg'] ?? '' );
+        if ( isset( $_POST['gowa_tab_section'] ) && $_POST['gowa_tab_section'] === 'wp' ) {
+            $sanitized['enable_wp_user_reg'] = ! empty( $input['enable_wp_user_reg'] ) ? 1 : 0;
+            $sanitized['wp_user_reg_msg']    = sanitize_textarea_field( $input['wp_user_reg_msg'] ?? '' );
+            $sanitized['enable_wp_comment']  = ! empty( $input['enable_wp_comment'] ) ? 1 : 0;
+            $sanitized['wp_comment_msg']     = sanitize_textarea_field( $input['wp_comment_msg'] ?? '' );
+        }
 
         // WooCommerce notifications
-        $sanitized['enable_wc_admin_order']   = ! empty( $input['enable_wc_admin_order'] ) ? 1 : 0;
-        $sanitized['wc_admin_order_msg']      = sanitize_textarea_field( $input['wc_admin_order_msg'] ?? '' );
-        $sanitized['enable_wc_cust_process']  = ! empty( $input['enable_wc_cust_process'] ) ? 1 : 0;
-        $sanitized['wc_cust_process_msg']     = sanitize_textarea_field( $input['wc_cust_process_msg'] ?? '' );
-        $sanitized['enable_wc_cust_complete'] = ! empty( $input['enable_wc_cust_complete'] ) ? 1 : 0;
-        $sanitized['wc_cust_complete_msg']    = sanitize_textarea_field( $input['wc_cust_complete_msg'] ?? '' );
-        $sanitized['enable_wc_cust_cancelled']= ! empty( $input['enable_wc_cust_cancelled'] ) ? 1 : 0;
-        $sanitized['wc_cust_cancelled_msg']   = sanitize_textarea_field( $input['wc_cust_cancelled_msg'] ?? '' );
-        $sanitized['enable_wc_low_stock']     = ! empty( $input['enable_wc_low_stock'] ) ? 1 : 0;
-        $sanitized['wc_low_stock_msg']        = sanitize_textarea_field( $input['wc_low_stock_msg'] ?? '' );
+        if ( isset( $_POST['gowa_tab_section'] ) && $_POST['gowa_tab_section'] === 'wc' ) {
+            $sanitized['enable_wc_admin_order']    = ! empty( $input['enable_wc_admin_order'] ) ? 1 : 0;
+            $sanitized['wc_admin_order_msg']       = sanitize_textarea_field( $input['wc_admin_order_msg'] ?? '' );
+            $sanitized['enable_wc_cust_process']   = ! empty( $input['enable_wc_cust_process'] ) ? 1 : 0;
+            $sanitized['wc_cust_process_msg']      = sanitize_textarea_field( $input['wc_cust_process_msg'] ?? '' );
+            $sanitized['enable_wc_cust_complete']  = ! empty( $input['enable_wc_cust_complete'] ) ? 1 : 0;
+            $sanitized['wc_cust_complete_msg']     = sanitize_textarea_field( $input['wc_cust_complete_msg'] ?? '' );
+            $sanitized['enable_wc_cust_cancelled'] = ! empty( $input['enable_wc_cust_cancelled'] ) ? 1 : 0;
+            $sanitized['wc_cust_cancelled_msg']    = sanitize_textarea_field( $input['wc_cust_cancelled_msg'] ?? '' );
+            $sanitized['enable_wc_low_stock']      = ! empty( $input['enable_wc_low_stock'] ) ? 1 : 0;
+            $sanitized['wc_low_stock_msg']         = sanitize_textarea_field( $input['wc_low_stock_msg'] ?? '' );
+        }
 
         update_option( self::OPTION_NAME, $sanitized );
 
@@ -286,6 +303,7 @@ class GOWA_Admin {
             <?php if ( $active_tab === 'api' ) : ?>
                 <form method="post" action="">
                     <?php wp_nonce_field( 'gowa_save_settings', 'gowa_save_settings_nonce' ); ?>
+                    <input type="hidden" name="gowa_tab_section" value="api">
                     <table class="form-table" role="presentation">
                         <tr>
                             <th scope="row"><label for="api_url"><?php esc_html_e( 'GOWA Server URL', 'gowa-notifications' ); ?></label></th>
@@ -338,18 +356,7 @@ class GOWA_Admin {
                 <?php else : ?>
                     <form method="post" action="">
                         <?php wp_nonce_field( 'gowa_save_settings', 'gowa_save_settings_nonce' ); ?>
-                        <!-- Preserve API Settings -->
-                        <input type="hidden" name="gowa_settings[api_url]\" value="<?php echo esc_attr( $settings['api_url'] ?? '' ); ?>">
-                        <input type="hidden" name="gowa_settings[device_id]\" value="<?php echo esc_attr( $settings['device_id'] ?? '' ); ?>">
-                        <input type="hidden" name="gowa_settings[auth_user]\" value="<?php echo esc_attr( $settings['auth_user'] ?? '' ); ?>">
-                        <input type="hidden" name="gowa_settings[auth_pass]\" value="<?php echo esc_attr( $settings['auth_pass'] ?? '' ); ?>">
-                        <input type="hidden" name="gowa_settings[default_country_code]\" value="<?php echo esc_attr( $settings['default_country_code'] ?? '880' ); ?>">
-                        <input type="hidden" name="gowa_settings[admin_phone]\" value="<?php echo esc_attr( $settings['admin_phone'] ?? '' ); ?>">
-                        <!-- Preserve WP Settings -->
-                        <input type="hidden" name="gowa_settings[enable_wp_user_reg]\" value="<?php echo esc_attr( $settings['enable_wp_user_reg'] ?? 0 ); ?>">
-                        <input type="hidden" name="gowa_settings[wp_user_reg_msg]\" value="<?php echo esc_attr( $settings['wp_user_reg_msg'] ?? '' ); ?>">
-                        <input type="hidden" name="gowa_settings[enable_wp_comment]\" value="<?php echo esc_attr( $settings['enable_wp_comment'] ?? 0 ); ?>">
-                        <input type="hidden" name="gowa_settings[wp_comment_msg]\" value="<?php echo esc_attr( $settings['wp_comment_msg'] ?? '' ); ?>">
+                        <input type="hidden" name="gowa_tab_section" value="wc">
 
                         <table class="form-table" role="presentation">
                             <tr>
@@ -426,24 +433,7 @@ class GOWA_Admin {
             <?php elseif ( $active_tab === 'wp' ) : ?>
                 <form method="post" action="">
                     <?php wp_nonce_field( 'gowa_save_settings', 'gowa_save_settings_nonce' ); ?>
-                    <!-- Preserve API Settings -->
-                    <input type="hidden" name="gowa_settings[api_url]" value="<?php echo esc_attr( $settings['api_url'] ?? '' ); ?>">
-                    <input type="hidden" name="gowa_settings[device_id]" value="<?php echo esc_attr( $settings['device_id'] ?? '' ); ?>">
-                    <input type="hidden" name="gowa_settings[auth_user]" value="<?php echo esc_attr( $settings['auth_user'] ?? '' ); ?>">
-                    <input type="hidden" name="gowa_settings[auth_pass]" value="<?php echo esc_attr( $settings['auth_pass'] ?? '' ); ?>">
-                    <input type="hidden" name="gowa_settings[default_country_code]" value="<?php echo esc_attr( $settings['default_country_code'] ?? '880' ); ?>">
-                    <input type="hidden" name="gowa_settings[admin_phone]" value="<?php echo esc_attr( $settings['admin_phone'] ?? '' ); ?>">
-                    <!-- Preserve WC Settings -->
-                    <input type="hidden" name="gowa_settings[enable_wc_admin_order]" value="<?php echo esc_attr( $settings['enable_wc_admin_order'] ?? 0 ); ?>">
-                    <input type="hidden" name="gowa_settings[wc_admin_order_msg]" value="<?php echo esc_attr( $settings['wc_admin_order_msg'] ?? '' ); ?>">
-                    <input type="hidden" name="gowa_settings[enable_wc_cust_process]" value="<?php echo esc_attr( $settings['enable_wc_cust_process'] ?? 0 ); ?>">
-                    <input type="hidden" name="gowa_settings[wc_cust_process_msg]" value="<?php echo esc_attr( $settings['wc_cust_process_msg'] ?? '' ); ?>">
-                    <input type="hidden" name="gowa_settings[enable_wc_cust_complete]" value="<?php echo esc_attr( $settings['enable_wc_cust_complete'] ?? 0 ); ?>">
-                    <input type="hidden" name="gowa_settings[wc_cust_complete_msg]" value="<?php echo esc_attr( $settings['wc_cust_complete_msg'] ?? '' ); ?>">
-                    <input type="hidden" name="gowa_settings[enable_wc_cust_cancelled]" value="<?php echo esc_attr( $settings['enable_wc_cust_cancelled'] ?? 0 ); ?>">
-                    <input type="hidden" name="gowa_settings[wc_cust_cancelled_msg]" value="<?php echo esc_attr( $settings['wc_cust_cancelled_msg'] ?? '' ); ?>">
-                    <input type="hidden" name="gowa_settings[enable_wc_low_stock]" value="<?php echo esc_attr( $settings['enable_wc_low_stock'] ?? 0 ); ?>">
-                    <input type="hidden" name="gowa_settings[wc_low_stock_msg]" value="<?php echo esc_attr( $settings['wc_low_stock_msg'] ?? '' ); ?>">
+                    <input type="hidden" name="gowa_tab_section" value="wp">
 
                     <table class="form-table" role="presentation">
                         <tr>
