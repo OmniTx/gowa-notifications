@@ -88,7 +88,7 @@ class GOWA_Admin {
         }
 
         $settings        = get_option( self::OPTION_NAME, array() );
-        $plugin_version  = defined( 'GOWA_VERSION' ) ? GOWA_VERSION : '1.4.4';
+        $plugin_version  = defined( 'GOWA_VERSION' ) ? GOWA_VERSION : '1.4.5';
         $export_settings = $settings;
 
         if ( ! empty( $export_settings['auth_pass'] ) ) {

@@ -5,7 +5,7 @@ Tags: notifications, woocommerce alerts, order notifications, gateway, messaging
 Requires at least: 5.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.4.4
+Stable tag: 1.4.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -50,11 +50,13 @@ This plugin connects to a self-hosted instance of GOWA (Go WhatsApp Web Multi-De
 
 == Changelog ==
 
-= 1.4.4 =
-* Fix: Multi-hook trigger covering Classic Checkout, WooCommerce Block Checkout (`woocommerce_store_api_checkout_order_processed`), and status transitions (Processing, On-Hold, Payment Complete, Thankyou).
-* Fix: In-memory and metadata deduplication to ensure order notifications fire reliably exactly once without duplicates.
-* Fix: Added HPOS metabox safety guard to prevent 500 errors on WooCommerce setups using Custom Order Tables.
-* Includes all features from 1.4.1 (multi-admin routing, dynamic placeholders, rich updater details).
+= 1.4.5 =
+* Fix: Added full status transition triggers (`woocommerce_order_status_processing`, `woocommerce_order_status_on-hold`, `woocommerce_payment_complete`, `woocommerce_thankyou`) for Cash on Delivery (COD) and all payment gateways.
+* Fix: Guaranteed WooCommerce loader on `plugins_loaded` hook to ensure compatibility regardless of plugin load order.
+* Fix: Two-tier deduplication (in-memory + database metadata) preventing duplicate order notifications.
+* Fix: WooCommerce Block Checkout compatibility via `woocommerce_store_api_checkout_order_processed`.
+* Fix: HPOS metabox safety guard to prevent 500 errors on setups using Custom Order Tables.
+* Includes multi-admin routing, dynamic placeholders, and rich updater details.
 
 = 1.4.1 =
 * Feature: Added multi-admin support (enter multiple phone numbers separated by commas).
