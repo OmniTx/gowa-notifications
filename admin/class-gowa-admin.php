@@ -24,10 +24,10 @@ class GOWA_Admin {
 
     public function add_menu_page() {
         add_options_page(
-            __( 'GOWA WhatsApp Settings', 'gowa-whatsapp' ),
-            __( 'GOWA WhatsApp', 'gowa-whatsapp' ),
+            __( 'GOWA Notifications', 'gowa-notifications' ),
+            __( 'GOWA Notifications', 'gowa-notifications' ),
             'manage_options',
-            'gowa-whatsapp',
+            'gowa-notifications',
             array( $this, 'render_settings_page' )
         );
     }
@@ -72,7 +72,7 @@ class GOWA_Admin {
 
         update_option( self::OPTION_NAME, $sanitized );
 
-        add_settings_error( 'gowa_messages', 'gowa_settings_saved', __( 'Settings saved successfully.', 'gowa-whatsapp' ), 'updated' );
+        add_settings_error( 'gowa_messages', 'gowa_settings_saved', __( 'Settings saved successfully.', 'gowa-notifications' ), 'updated' );
     }
 
     /**
@@ -88,7 +88,7 @@ class GOWA_Admin {
         }
 
         $settings        = get_option( self::OPTION_NAME, array() );
-        $plugin_version  = defined( 'GOWA_VERSION' ) ? GOWA_VERSION : '1.3.3';
+        $plugin_version  = defined( 'GOWA_VERSION' ) ? GOWA_VERSION : '1.4.1';
         $export_settings = $settings;
 
         if ( ! empty( $export_settings['auth_pass'] ) ) {
@@ -96,14 +96,14 @@ class GOWA_Admin {
         }
 
         $export_payload = array(
-            'plugin'      => 'gowa-whatsapp-notifications',
+            'plugin'      => 'gowa-notifications',
             'version'     => $plugin_version,
             'exported_at' => current_time( 'mysql' ),
             'site_url'    => site_url(),
             'settings'    => $export_settings,
         );
 
-        $filename = 'gowa-whatsapp-settings-' . date( 'Y-m-d_H-i' ) . '.json';
+        $filename = 'gowa-notifications-settings-' . date( 'Y-m-d_H-i' ) . '.json';
 
         nocache_headers();
         header( 'Content-Type: application/json; charset=utf-8' );
@@ -127,7 +127,7 @@ class GOWA_Admin {
         }
 
         if ( empty( $_FILES['gowa_import_file']['tmp_name'] ) ) {
-            add_settings_error( 'gowa_messages', 'gowa_import_err', __( 'Please choose a valid JSON file to import.', 'gowa-whatsapp' ), 'error' );
+            add_settings_error( 'gowa_messages', 'gowa_import_err', __( 'Please choose a valid JSON file to import.', 'gowa-notifications' ), 'error' );
             return;
         }
 
@@ -135,7 +135,7 @@ class GOWA_Admin {
         $data         = json_decode( $json_content, true );
 
         if ( ! is_array( $data ) ) {
-            add_settings_error( 'gowa_messages', 'gowa_import_err', __( 'Invalid JSON file format.', 'gowa-whatsapp' ), 'error' );
+            add_settings_error( 'gowa_messages', 'gowa_import_err', __( 'Invalid JSON file format.', 'gowa-notifications' ), 'error' );
             return;
         }
 
@@ -178,12 +178,12 @@ class GOWA_Admin {
 
             if ( ! empty( $sanitized ) ) {
                 update_option( self::OPTION_NAME, $sanitized );
-                add_settings_error( 'gowa_messages', 'gowa_import_success', __( 'Settings imported successfully!', 'gowa-whatsapp' ), 'updated' );
+                add_settings_error( 'gowa_messages', 'gowa_import_success', __( 'Settings imported successfully!', 'gowa-notifications' ), 'updated' );
             } else {
-                add_settings_error( 'gowa_messages', 'gowa_import_err', __( 'No recognized settings found in the file.', 'gowa-whatsapp' ), 'error' );
+                add_settings_error( 'gowa_messages', 'gowa_import_err', __( 'No recognized settings found in the file.', 'gowa-notifications' ), 'error' );
             }
         } else {
-            add_settings_error( 'gowa_messages', 'gowa_import_err', __( 'No settings found in the JSON file.', 'gowa-whatsapp' ), 'error' );
+            add_settings_error( 'gowa_messages', 'gowa_import_err', __( 'No settings found in the JSON file.', 'gowa-notifications' ), 'error' );
         }
     }
 
@@ -194,7 +194,7 @@ class GOWA_Admin {
         check_ajax_referer( 'gowa_admin_ajax_nonce', 'nonce' );
 
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( array( 'message' => __( 'Permission denied.', 'gowa-whatsapp' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Permission denied.', 'gowa-notifications' ) ) );
         }
 
         $result = GOWA_API::check_connection();
@@ -212,24 +212,24 @@ class GOWA_Admin {
         check_ajax_referer( 'gowa_admin_ajax_nonce', 'nonce' );
 
         if ( ! current_user_can( 'manage_options' ) ) {
-            wp_send_json_error( array( 'message' => __( 'Permission denied.', 'gowa-whatsapp' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Permission denied.', 'gowa-notifications' ) ) );
         }
 
         $phone   = isset( $_POST['phone'] ) ? sanitize_text_field( $_POST['phone'] ) : '';
         $message = isset( $_POST['message'] ) ? sanitize_textarea_field( $_POST['message'] ) : '';
 
         if ( empty( $phone ) ) {
-            wp_send_json_error( array( 'message' => __( 'Please enter a recipient phone number.', 'gowa-whatsapp' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Please enter a recipient phone number.', 'gowa-notifications' ) ) );
         }
 
         if ( empty( $message ) ) {
-            wp_send_json_error( array( 'message' => __( 'Please enter a message to send.', 'gowa-whatsapp' ) ) );
+            wp_send_json_error( array( 'message' => __( 'Please enter a message to send.', 'gowa-notifications' ) ) );
         }
 
         $result = GOWA_API::send_message( $phone, $message );
         if ( $result['success'] ) {
             wp_send_json_success( array(
-                'message' => sprintf( __( 'WhatsApp message successfully delivered to %s!', 'gowa-whatsapp' ), esc_html( $phone ) ),
+                'message' => sprintf( __( 'WhatsApp message successfully delivered to %s!', 'gowa-notifications' ), esc_html( $phone ) ),
                 'data'    => $result,
             ) );
         } else {
@@ -270,17 +270,17 @@ class GOWA_Admin {
         $ajax_nonce   = wp_create_nonce( 'gowa_admin_ajax_nonce' );
         ?>
         <div class="wrap gowa-admin-wrap" style="max-width: 1000px;">
-            <h1><span class="dashicons dashicons-whatsapp" style="font-size: 32px; width: 32px; height: 32px; color: #25D366; vertical-align: middle;"></span> <?php esc_html_e( 'GOWA WhatsApp Notifications', 'gowa-whatsapp' ); ?></h1>
-            <p class="description"><?php esc_html_e( 'Connect your self-hosted GOWA (Go WhatsApp Web Multi-Device) server for automated WordPress and WooCommerce alerts.', 'gowa-whatsapp' ); ?></p>
+            <h1><span class="dashicons dashicons-whatsapp" style="font-size: 32px; width: 32px; height: 32px; color: #25D366; vertical-align: middle;"></span> <?php esc_html_e( 'GOWA Notifications', 'gowa-notifications' ); ?></h1>
+            <p class="description"><?php esc_html_e( 'Connect your self-hosted GOWA (Go WhatsApp Web Multi-Device) server for automated WordPress and WooCommerce alerts.', 'gowa-notifications' ); ?></p>
 
             <?php settings_errors( 'gowa_messages' ); ?>
 
             <h2 class="nav-tab-wrapper" style="margin-bottom: 20px;">
-                <a href="?page=gowa-whatsapp&tab=api" class="nav-tab <?php echo $active_tab === 'api' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'API & Gateway', 'gowa-whatsapp' ); ?></a>
-                <a href="?page=gowa-whatsapp&tab=wc" class="nav-tab <?php echo $active_tab === 'wc' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Client & Order Messages', 'gowa-whatsapp' ); ?></a>
-                <a href="?page=gowa-whatsapp&tab=wp" class="nav-tab <?php echo $active_tab === 'wp' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'WordPress Core Alerts', 'gowa-whatsapp' ); ?></a>
-                <a href="?page=gowa-whatsapp&tab=test" class="nav-tab <?php echo $active_tab === 'test' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Direct Client Message / Test', 'gowa-whatsapp' ); ?></a>
-                <a href="?page=gowa-whatsapp&tab=tools" class="nav-tab <?php echo $active_tab === 'tools' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Export / Import', 'gowa-whatsapp' ); ?></a>
+                <a href="?page=gowa-notifications&tab=api" class="nav-tab <?php echo $active_tab === 'api' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'API & Gateway', 'gowa-notifications' ); ?></a>
+                <a href="?page=gowa-notifications&tab=wc" class="nav-tab <?php echo $active_tab === 'wc' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Client & Order Messages', 'gowa-notifications' ); ?></a>
+                <a href="?page=gowa-notifications&tab=wp" class="nav-tab <?php echo $active_tab === 'wp' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'WordPress Core Alerts', 'gowa-notifications' ); ?></a>
+                <a href="?page=gowa-notifications&tab=test" class="nav-tab <?php echo $active_tab === 'test' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Direct Client Message / Test', 'gowa-notifications' ); ?></a>
+                <a href="?page=gowa-notifications&tab=tools" class="nav-tab <?php echo $active_tab === 'tools' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'Export / Import', 'gowa-notifications' ); ?></a>
             </h2>
 
             <?php if ( $active_tab === 'api' ) : ?>
@@ -288,76 +288,76 @@ class GOWA_Admin {
                     <?php wp_nonce_field( 'gowa_save_settings', 'gowa_save_settings_nonce' ); ?>
                     <table class="form-table" role="presentation">
                         <tr>
-                            <th scope="row"><label for="api_url"><?php esc_html_e( 'GOWA Server URL', 'gowa-whatsapp' ); ?></label></th>
+                            <th scope="row"><label for="api_url"><?php esc_html_e( 'GOWA Server URL', 'gowa-notifications' ); ?></label></th>
                             <td>
                                 <input name="gowa_settings[api_url]" type="url" id="api_url" value="<?php echo esc_attr( $config['api_url'] ); ?>" class="regular-text" required placeholder="http://localhost:3000 or https://wa.yourdomain.com">
-                                <p class="description"><?php esc_html_e( 'URL of your running GOWA REST API instance (e.g. http://localhost:3000 or https://wa.yourdomain.com).', 'gowa-whatsapp' ); ?></p>
+                                <p class="description"><?php esc_html_e( 'URL of your running GOWA REST API instance (e.g. http://localhost:3000 or https://wa.yourdomain.com).', 'gowa-notifications' ); ?></p>
                             </td>
                         </tr>
                         <tr>
-                            <th scope="row"><label for="device_id"><?php esc_html_e( 'Device ID (Optional)', 'gowa-whatsapp' ); ?></label></th>
+                            <th scope="row"><label for="device_id"><?php esc_html_e( 'Device ID (Optional)', 'gowa-notifications' ); ?></label></th>
                             <td>
                                 <input name="gowa_settings[device_id]" type="text" id="device_id" value="<?php echo esc_attr( $config['device_id'] ); ?>" class="regular-text" placeholder="e.g. default or your-device-uuid">
-                                <p class="description"><?php esc_html_e( 'Optional. Leave blank if using a single default device, or enter your device ID for GOWA v8+ multi-device.', 'gowa-whatsapp' ); ?></p>
+                                <p class="description"><?php esc_html_e( 'Optional. Leave blank if using a single default device, or enter your device ID for GOWA v8+ multi-device.', 'gowa-notifications' ); ?></p>
                             </td>
                         </tr>
                         <tr>
-                            <th scope="row"><label for="auth_user"><?php esc_html_e( 'Basic Auth Username', 'gowa-whatsapp' ); ?></label></th>
+                            <th scope="row"><label for="auth_user"><?php esc_html_e( 'Basic Auth Username', 'gowa-notifications' ); ?></label></th>
                             <td>
                                 <input name="gowa_settings[auth_user]" type="text" id="auth_user" value="<?php echo esc_attr( $config['auth_user'] ); ?>" class="regular-text">
-                                <p class="description"><?php esc_html_e( 'Optional. Username if GOWA was launched with basic authentication (-b=username:password).', 'gowa-whatsapp' ); ?></p>
+                                <p class="description"><?php esc_html_e( 'Optional. Username if GOWA was launched with basic authentication (-b=username:password).', 'gowa-notifications' ); ?></p>
                             </td>
                         </tr>
                         <tr>
-                            <th scope="row"><label for="auth_pass"><?php esc_html_e( 'Basic Auth Password', 'gowa-whatsapp' ); ?></label></th>
+                            <th scope="row"><label for="auth_pass"><?php esc_html_e( 'Basic Auth Password', 'gowa-notifications' ); ?></label></th>
                             <td>
                                 <input name="gowa_settings[auth_pass]" type="password" id="auth_pass" value="<?php echo esc_attr( $config['auth_pass'] ); ?>" class="regular-text">
                             </td>
                         </tr>
                         <tr>
-                            <th scope="row"><label for="default_country_code"><?php esc_html_e( 'Default Country Code', 'gowa-whatsapp' ); ?></label></th>
+                            <th scope="row"><label for="default_country_code"><?php esc_html_e( 'Default Country Code', 'gowa-notifications' ); ?></label></th>
                             <td>
                                 <input name="gowa_settings[default_country_code]" type="text" id="default_country_code" value="<?php echo esc_attr( $config['default_country_code'] ?? '880' ); ?>" class="small-text" placeholder="880">
-                                <p class="description"><?php esc_html_e( 'Country calling code without + (e.g. 880 for BD, 1 for US/CA, 91 for India, 44 for UK, 62 for Indonesia). Used to automatically prefix numbers entered with a leading 0 (e.g. 0184... becomes 880184...). Full international numbers with country code are used as-is.', 'gowa-whatsapp' ); ?></p>
+                                <p class="description"><?php esc_html_e( 'Country calling code without + (e.g. 880 for BD, 1 for US/CA, 91 for India, 44 for UK, 62 for Indonesia). Used to automatically prefix numbers entered with a leading 0 (e.g. 0184... becomes 880184...). Full international numbers with country code are used as-is.', 'gowa-notifications' ); ?></p>
                             </td>
                         </tr>
                         <tr>
-                            <th scope="row"><label for="admin_phone"><?php esc_html_e( 'Store Admin WhatsApp Number', 'gowa-whatsapp' ); ?></label></th>
+                            <th scope="row"><label for="admin_phone"><?php esc_html_e( 'Store Admin WhatsApp Number(s)', 'gowa-notifications' ); ?></label></th>
                             <td>
-                                <input name="gowa_settings[admin_phone]" type="text" id="admin_phone" value="<?php echo esc_attr( $config['admin_phone'] ); ?>" class="regular-text" placeholder="e.g. 8801700000000 or 14155552671">
-                                <p class="description"><?php esc_html_e( 'Admin phone number for store notifications.', 'gowa-whatsapp' ); ?></p>
+                                <input name="gowa_settings[admin_phone]" type="text" id="admin_phone" value="<?php echo esc_attr( $config['admin_phone'] ); ?>" class="regular-text" placeholder="e.g. 01700000000, 01800000000">
+                                <p class="description"><?php esc_html_e( 'Admin phone number(s) for store alerts. You can enter multiple numbers separated by commas.', 'gowa-notifications' ); ?></p>
                             </td>
                         </tr>
                     </table>
-                    <?php submit_button( __( 'Save API Settings', 'gowa-whatsapp' ) ); ?>
+                    <?php submit_button( __( 'Save API Settings', 'gowa-notifications' ) ); ?>
                 </form>
 
             <?php elseif ( $active_tab === 'wc' ) : ?>
                 <?php if ( ! $is_wc_active ) : ?>
-                    <div class="notice notice-warning inline"><p><?php esc_html_e( 'WooCommerce is not active. Install and activate WooCommerce to use client order notifications.', 'gowa-whatsapp' ); ?></p></div>
+                    <div class="notice notice-warning inline"><p><?php esc_html_e( 'WooCommerce is not active. Install and activate WooCommerce to use client order notifications.', 'gowa-notifications' ); ?></p></div>
                 <?php else : ?>
                     <form method="post" action="">
                         <?php wp_nonce_field( 'gowa_save_settings', 'gowa_save_settings_nonce' ); ?>
                         <!-- Preserve API Settings -->
-                        <input type="hidden" name="gowa_settings[api_url]" value="<?php echo esc_attr( $settings['api_url'] ?? '' ); ?>">
-                        <input type="hidden" name="gowa_settings[device_id]" value="<?php echo esc_attr( $settings['device_id'] ?? '' ); ?>">
-                        <input type="hidden" name="gowa_settings[auth_user]" value="<?php echo esc_attr( $settings['auth_user'] ?? '' ); ?>">
-                        <input type="hidden" name="gowa_settings[auth_pass]" value="<?php echo esc_attr( $settings['auth_pass'] ?? '' ); ?>">
-                        <input type="hidden" name="gowa_settings[default_country_code]" value="<?php echo esc_attr( $settings['default_country_code'] ?? '880' ); ?>">
-                        <input type="hidden" name="gowa_settings[admin_phone]" value="<?php echo esc_attr( $settings['admin_phone'] ?? '' ); ?>">
+                        <input type="hidden" name="gowa_settings[api_url]\" value="<?php echo esc_attr( $settings['api_url'] ?? '' ); ?>">
+                        <input type="hidden" name="gowa_settings[device_id]\" value="<?php echo esc_attr( $settings['device_id'] ?? '' ); ?>">
+                        <input type="hidden" name="gowa_settings[auth_user]\" value="<?php echo esc_attr( $settings['auth_user'] ?? '' ); ?>">
+                        <input type="hidden" name="gowa_settings[auth_pass]\" value="<?php echo esc_attr( $settings['auth_pass'] ?? '' ); ?>">
+                        <input type="hidden" name="gowa_settings[default_country_code]\" value="<?php echo esc_attr( $settings['default_country_code'] ?? '880' ); ?>">
+                        <input type="hidden" name="gowa_settings[admin_phone]\" value="<?php echo esc_attr( $settings['admin_phone'] ?? '' ); ?>">
                         <!-- Preserve WP Settings -->
-                        <input type="hidden" name="gowa_settings[enable_wp_user_reg]" value="<?php echo esc_attr( $settings['enable_wp_user_reg'] ?? 0 ); ?>">
-                        <input type="hidden" name="gowa_settings[wp_user_reg_msg]" value="<?php echo esc_attr( $settings['wp_user_reg_msg'] ?? '' ); ?>">
-                        <input type="hidden" name="gowa_settings[enable_wp_comment]" value="<?php echo esc_attr( $settings['enable_wp_comment'] ?? 0 ); ?>">
-                        <input type="hidden" name="gowa_settings[wp_comment_msg]" value="<?php echo esc_attr( $settings['wp_comment_msg'] ?? '' ); ?>">
+                        <input type="hidden" name="gowa_settings[enable_wp_user_reg]\" value="<?php echo esc_attr( $settings['enable_wp_user_reg'] ?? 0 ); ?>">
+                        <input type="hidden" name="gowa_settings[wp_user_reg_msg]\" value="<?php echo esc_attr( $settings['wp_user_reg_msg'] ?? '' ); ?>">
+                        <input type="hidden" name="gowa_settings[enable_wp_comment]\" value="<?php echo esc_attr( $settings['enable_wp_comment'] ?? 0 ); ?>">
+                        <input type="hidden" name="gowa_settings[wp_comment_msg]\" value="<?php echo esc_attr( $settings['wp_comment_msg'] ?? '' ); ?>">
 
                         <table class="form-table" role="presentation">
                             <tr>
-                                <th scope="row"><?php esc_html_e( 'Client: Order Processing Message', 'gowa-whatsapp' ); ?></th>
+                                <th scope="row"><?php esc_html_e( 'Client: Order Processing Message', 'gowa-notifications' ); ?></th>
                                 <td>
                                     <label>
                                         <input type="checkbox" name="gowa_settings[enable_wc_cust_process]" value="1" <?php checked( $settings['enable_wc_cust_process'] ?? 0, 1 ); ?>>
-                                        <strong><?php esc_html_e( 'Automatically send WhatsApp message to client when order is Received / Processing', 'gowa-whatsapp' ); ?></strong>
+                                        <strong><?php esc_html_e( 'Automatically send WhatsApp message to client when order is Received / Processing', 'gowa-notifications' ); ?></strong>
                                     </label>
                                     <br><br>
                                     <textarea name="gowa_settings[wc_cust_process_msg]" rows="6" class="large-text"><?php echo esc_textarea( $settings['wc_cust_process_msg'] ?? '' ); ?></textarea>
@@ -365,11 +365,11 @@ class GOWA_Admin {
                             </tr>
 
                             <tr>
-                                <th scope="row"><?php esc_html_e( 'Client: Order Completed Message', 'gowa-whatsapp' ); ?></th>
+                                <th scope="row"><?php esc_html_e( 'Client: Order Completed Message', 'gowa-notifications' ); ?></th>
                                 <td>
                                     <label>
                                         <input type="checkbox" name="gowa_settings[enable_wc_cust_complete]" value="1" <?php checked( $settings['enable_wc_cust_complete'] ?? 0, 1 ); ?>>
-                                        <strong><?php esc_html_e( 'Automatically send WhatsApp message to client when order is Completed', 'gowa-whatsapp' ); ?></strong>
+                                        <strong><?php esc_html_e( 'Automatically send WhatsApp message to client when order is Completed', 'gowa-notifications' ); ?></strong>
                                     </label>
                                     <br><br>
                                     <textarea name="gowa_settings[wc_cust_complete_msg]" rows="5" class="large-text"><?php echo esc_textarea( $settings['wc_cust_complete_msg'] ?? '' ); ?></textarea>
@@ -377,11 +377,11 @@ class GOWA_Admin {
                             </tr>
 
                             <tr>
-                                <th scope="row"><?php esc_html_e( 'Client: Order Cancelled Message', 'gowa-whatsapp' ); ?></th>
+                                <th scope="row"><?php esc_html_e( 'Client: Order Cancelled Message', 'gowa-notifications' ); ?></th>
                                 <td>
                                     <label>
                                         <input type="checkbox" name="gowa_settings[enable_wc_cust_cancelled]" value="1" <?php checked( $settings['enable_wc_cust_cancelled'] ?? 0, 1 ); ?>>
-                                        <strong><?php esc_html_e( 'Automatically send WhatsApp message to client when order is Cancelled', 'gowa-whatsapp' ); ?></strong>
+                                        <strong><?php esc_html_e( 'Automatically send WhatsApp message to client when order is Cancelled', 'gowa-notifications' ); ?></strong>
                                     </label>
                                     <br><br>
                                     <textarea name="gowa_settings[wc_cust_cancelled_msg]" rows="4" class="large-text"><?php echo esc_textarea( $settings['wc_cust_cancelled_msg'] ?? '' ); ?></textarea>
@@ -389,11 +389,11 @@ class GOWA_Admin {
                             </tr>
 
                             <tr>
-                                <th scope="row"><?php esc_html_e( 'Admin: New Order Alert', 'gowa-whatsapp' ); ?></th>
+                                <th scope="row"><?php esc_html_e( 'Admin: New Order Alert', 'gowa-notifications' ); ?></th>
                                 <td>
                                     <label>
                                         <input type="checkbox" name="gowa_settings[enable_wc_admin_order]" value="1" <?php checked( $settings['enable_wc_admin_order'] ?? 0, 1 ); ?>>
-                                        <strong><?php esc_html_e( 'Send WhatsApp alert to Admin when a new order is received', 'gowa-whatsapp' ); ?></strong>
+                                        <strong><?php esc_html_e( 'Send WhatsApp alert to Admin when a new order is received', 'gowa-notifications' ); ?></strong>
                                     </label>
                                     <br><br>
                                     <textarea name="gowa_settings[wc_admin_order_msg]" rows="5" class="large-text"><?php echo esc_textarea( $settings['wc_admin_order_msg'] ?? '' ); ?></textarea>
@@ -401,11 +401,11 @@ class GOWA_Admin {
                             </tr>
 
                             <tr>
-                                <th scope="row"><?php esc_html_e( 'Admin: Low Stock Alert', 'gowa-whatsapp' ); ?></th>
+                                <th scope="row"><?php esc_html_e( 'Admin: Low Stock Alert', 'gowa-notifications' ); ?></th>
                                 <td>
                                     <label>
                                         <input type="checkbox" name="gowa_settings[enable_wc_low_stock]" value="1" <?php checked( $settings['enable_wc_low_stock'] ?? 0, 1 ); ?>>
-                                        <strong><?php esc_html_e( 'Send WhatsApp alert to Admin on low inventory', 'gowa-whatsapp' ); ?></strong>
+                                        <strong><?php esc_html_e( 'Send WhatsApp alert to Admin on low inventory', 'gowa-notifications' ); ?></strong>
                                     </label>
                                     <br><br>
                                     <textarea name="gowa_settings[wc_low_stock_msg]" rows="4" class="large-text"><?php echo esc_textarea( $settings['wc_low_stock_msg'] ?? '' ); ?></textarea>
@@ -414,12 +414,12 @@ class GOWA_Admin {
                         </table>
 
                         <div class="card" style="margin-top: 20px; padding: 15px; background: #fdfdfd; border-left: 4px solid #25D366;">
-                            <h3 style="margin-top: 0;"><?php esc_html_e( 'Dynamic Message Placeholders', 'gowa-whatsapp' ); ?></h3>
-                            <p><?php esc_html_e( 'Use any of these tags in your message fields to automatically insert dynamic details:', 'gowa-whatsapp' ); ?></p>
-                            <p><code>{customer_name}</code>, <code>{customer_first_name}</code>, <code>{order_id}</code>, <code>{order_total}</code>, <code>{order_items}</code>, <code>{customer_note}</code>, <code>{billing_phone}</code>, <code>{shipping_address}</code>, <code>{payment_method}</code>, <code>{order_date}</code>, <code>{site_name}</code>, <code>{site_url}</code></p>
+                            <h3 style="margin-top: 0;"><?php esc_html_e( 'Dynamic Message Placeholders', 'gowa-notifications' ); ?></h3>
+                            <p><?php esc_html_e( 'Use any of these tags in your message fields to automatically insert dynamic details:', 'gowa-notifications' ); ?></p>
+                            <p><code>{customer_name}</code>, <code>{customer_first_name}</code>, <code>{customer_last_name}</code>, <code>{customer_email}</code>, <code>{order_id}</code>, <code>{order_number}</code>, <code>{order_total}</code>, <code>{order_items}</code>, <code>{items_count}</code>, <code>{customer_note}</code>, <code>{billing_phone}</code>, <code>{shipping_address}</code>, <code>{shipping_method}</code>, <code>{payment_method}</code>, <code>{payment_url}</code>, <code>{order_date}</code>, <code>{site_name}</code>, <code>{site_url}</code></p>
                         </div>
 
-                        <?php submit_button( __( 'Save Client & Order Message Settings', 'gowa-whatsapp' ) ); ?>
+                        <?php submit_button( __( 'Save Client & Order Message Settings', 'gowa-notifications' ) ); ?>
                     </form>
                 <?php endif; ?>
 
@@ -447,50 +447,50 @@ class GOWA_Admin {
 
                     <table class="form-table" role="presentation">
                         <tr>
-                            <th scope="row"><?php esc_html_e( 'New User Registration', 'gowa-whatsapp' ); ?></th>
+                            <th scope="row"><?php esc_html_e( 'New User Registration', 'gowa-notifications' ); ?></th>
                             <td>
                                 <label>
                                     <input type="checkbox" name="gowa_settings[enable_wp_user_reg]" value="1" <?php checked( $settings['enable_wp_user_reg'] ?? 0, 1 ); ?>>
-                                    <?php esc_html_e( 'Send WhatsApp alert to Admin when a new user registers', 'gowa-whatsapp' ); ?>
+                                    <?php esc_html_e( 'Send WhatsApp alert to Admin when a new user registers', 'gowa-notifications' ); ?>
                                 </label>
                                 <br><br>
                                 <textarea name="gowa_settings[wp_user_reg_msg]" rows="5" class="large-text"><?php echo esc_textarea( $settings['wp_user_reg_msg'] ?? '' ); ?></textarea>
-                                <p class="description"><?php esc_html_e( 'Tags: {site_name}, {site_url}, {username}, {email}, {user_id}, {date}', 'gowa-whatsapp' ); ?></p>
+                                <p class="description"><?php esc_html_e( 'Tags: {site_name}, {site_url}, {username}, {email}, {user_id}, {date}', 'gowa-notifications' ); ?></p>
                             </td>
                         </tr>
                         <tr>
-                            <th scope="row"><?php esc_html_e( 'New Comment Posted', 'gowa-whatsapp' ); ?></th>
+                            <th scope="row"><?php esc_html_e( 'New Comment Posted', 'gowa-notifications' ); ?></th>
                             <td>
                                 <label>
                                     <input type="checkbox" name="gowa_settings[enable_wp_comment]" value="1" <?php checked( $settings['enable_wp_comment'] ?? 0, 1 ); ?>>
-                                    <?php esc_html_e( 'Send WhatsApp alert to Admin on new comments', 'gowa-whatsapp' ); ?>
+                                    <?php esc_html_e( 'Send WhatsApp alert to Admin on new comments', 'gowa-notifications' ); ?>
                                 </label>
                                 <br><br>
                                 <textarea name="gowa_settings[wp_comment_msg]" rows="5" class="large-text"><?php echo esc_textarea( $settings['wp_comment_msg'] ?? '' ); ?></textarea>
-                                <p class="description"><?php esc_html_e( 'Tags: {site_name}, {author}, {author_email}, {post_title}, {comment_content}, {comment_url}, {date}', 'gowa-whatsapp' ); ?></p>
+                                <p class="description"><?php esc_html_e( 'Tags: {site_name}, {author}, {author_email}, {post_title}, {comment_content}, {comment_url}, {date}', 'gowa-notifications' ); ?></p>
                             </td>
                         </tr>
                     </table>
-                    <?php submit_button( __( 'Save WordPress Settings', 'gowa-whatsapp' ) ); ?>
+                    <?php submit_button( __( 'Save WordPress Settings', 'gowa-notifications' ) ); ?>
                 </form>
 
             <?php elseif ( $active_tab === 'test' ) : ?>
                 <!-- Direct Client WhatsApp Messenger -->
                 <div class="card" style="margin-top: 20px; padding: 20px; background: #fff;">
-                    <h2><?php esc_html_e( 'Direct Client Message / Test WhatsApp', 'gowa-whatsapp' ); ?></h2>
-                    <p><?php esc_html_e( 'Type any message in English below to send an instant test or message any client directly from WordPress:', 'gowa-whatsapp' ); ?></p>
+                    <h2><?php esc_html_e( 'Direct Client Message / Test WhatsApp', 'gowa-notifications' ); ?></h2>
+                    <p><?php esc_html_e( 'Type any message in English below to send an instant test or message any client directly from WordPress:', 'gowa-notifications' ); ?></p>
                     
                     <div id="gowa_direct_send_box">
                         <table class="form-table" role="presentation">
                             <tr>
-                                <th scope="row"><label for="gowa_direct_phone"><?php esc_html_e( 'Client Phone Number', 'gowa-whatsapp' ); ?></label></th>
+                                <th scope="row"><label for="gowa_direct_phone"><?php esc_html_e( 'Client Phone Number', 'gowa-notifications' ); ?></label></th>
                                 <td>
                                     <input type="text" id="gowa_direct_phone" value="<?php echo esc_attr( $config['admin_phone'] ); ?>" class="regular-text" placeholder="e.g. 01700000000 or +8801700000000">
-                                    <p class="description"><?php esc_html_e( 'Enter the phone number (with or without +). Local numbers starting with 0 will automatically use the configured Default Country Code.', 'gowa-whatsapp' ); ?></p>
+                                    <p class="description"><?php esc_html_e( 'Enter the phone number (with or without +). Local numbers starting with 0 will automatically use the configured Default Country Code.', 'gowa-notifications' ); ?></p>
                                 </td>
                             </tr>
                             <tr>
-                                <th scope="row"><label for="gowa_direct_message"><?php esc_html_e( 'Message to Text Client', 'gowa-whatsapp' ); ?></label></th>
+                                <th scope="row"><label for="gowa_direct_message"><?php esc_html_e( 'Message to Text Client', 'gowa-notifications' ); ?></label></th>
                                 <td>
                                     <textarea id="gowa_direct_message" rows="5" class="large-text" placeholder="Type what you want to text the client...">Hello, thank you for contacting us! How can we help you today?</textarea>
                                 </td>
@@ -498,7 +498,7 @@ class GOWA_Admin {
                         </table>
                         <p>
                             <button type="button" id="gowa_btn_direct_send" class="button button-primary button-large" style="background:#25D366; border-color:#1EBE5D; color:#fff;">
-                                <span class="dashicons dashicons-whatsapp" style="vertical-align: middle; margin-top:-2px;"></span> <?php esc_html_e( 'Send Message via WhatsApp', 'gowa-whatsapp' ); ?>
+                                <span class="dashicons dashicons-whatsapp" style="vertical-align: middle; margin-top:-2px;"></span> <?php esc_html_e( 'Send Message via WhatsApp', 'gowa-notifications' ); ?>
                             </button>
                         </p>
                         <div id="gowa_direct_send_status" style="margin-top: 15px; display: none;"></div>
@@ -507,11 +507,11 @@ class GOWA_Admin {
 
                 <!-- Live Gateway Connection Diagnostics -->
                 <div class="card" style="margin-top: 20px; padding: 20px; background: #fff;">
-                    <h2><?php esc_html_e( 'Test Gateway Connection', 'gowa-whatsapp' ); ?></h2>
-                    <p><?php esc_html_e( 'Check if your WordPress server can communicate with your configured GOWA REST API gateway.', 'gowa-whatsapp' ); ?></p>
+                    <h2><?php esc_html_e( 'Test Gateway Connection', 'gowa-notifications' ); ?></h2>
+                    <p><?php esc_html_e( 'Check if your WordPress server can communicate with your configured GOWA REST API gateway.', 'gowa-notifications' ); ?></p>
                     <p>
                         <button type="button" id="gowa_btn_check_connection" class="button button-secondary button-large">
-                            <span class="dashicons dashicons-rest-api" style="vertical-align: middle; margin-top:-2px;"></span> <?php esc_html_e( 'Check GOWA Connection', 'gowa-whatsapp' ); ?>
+                            <span class="dashicons dashicons-rest-api" style="vertical-align: middle; margin-top:-2px;"></span> <?php esc_html_e( 'Check GOWA Connection', 'gowa-notifications' ); ?>
                         </button>
                     </p>
                     <div id="gowa_conn_status_box" style="margin-top: 15px; display: none;"></div>
@@ -621,14 +621,14 @@ class GOWA_Admin {
                     <div class="card" style="padding: 20px; background: #fff; border-top: 4px solid #25D366; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                         <h2 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
                             <span class="dashicons dashicons-download" style="color: #25D366;"></span>
-                            <?php esc_html_e( 'Export Settings', 'gowa-whatsapp' ); ?>
+                            <?php esc_html_e( 'Export Settings', 'gowa-notifications' ); ?>
                         </h2>
-                        <p><?php esc_html_e( 'Download all your current GOWA WhatsApp settings (API configuration, admin numbers, and custom notification templates) as a JSON file backup.', 'gowa-whatsapp' ); ?></p>
+                        <p><?php esc_html_e( 'Download all your current GOWA settings (API configuration, admin numbers, and custom notification templates) as a JSON file backup.', 'gowa-notifications' ); ?></p>
                         <form method="post" action="" style="margin-top: 20px;">
                             <?php wp_nonce_field( 'gowa_export_action', 'gowa_export_nonce' ); ?>
                             <button type="submit" class="button button-primary button-large" style="background:#25D366; border-color:#1EBE5D; color:#fff; display: inline-flex; align-items: center; gap: 6px;">
                                 <span class="dashicons dashicons-download" style="margin-top: -2px;"></span>
-                                <?php esc_html_e( 'Download Settings (.json)', 'gowa-whatsapp' ); ?>
+                                <?php esc_html_e( 'Download Settings (.json)', 'gowa-notifications' ); ?>
                             </button>
                         </form>
                     </div>
@@ -637,18 +637,18 @@ class GOWA_Admin {
                     <div class="card" style="padding: 20px; background: #fff; border-top: 4px solid #0073aa; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                         <h2 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
                             <span class="dashicons dashicons-upload" style="color: #0073aa;"></span>
-                            <?php esc_html_e( 'Import Settings', 'gowa-whatsapp' ); ?>
+                            <?php esc_html_e( 'Import Settings', 'gowa-notifications' ); ?>
                         </h2>
-                        <p><?php esc_html_e( 'Upload a previously exported GOWA settings JSON file to restore your settings or migrate them to this store.', 'gowa-whatsapp' ); ?></p>
+                        <p><?php esc_html_e( 'Upload a previously exported GOWA settings JSON file to restore your settings or migrate them to this store.', 'gowa-notifications' ); ?></p>
                         <form method="post" action="" enctype="multipart/form-data" style="margin-top: 20px;">
                             <?php wp_nonce_field( 'gowa_import_action', 'gowa_import_nonce' ); ?>
                             <p>
                                 <input type="file" name="gowa_import_file" accept=".json" required style="padding: 5px; border: 1px dashed #ccc; width: 100%; box-sizing: border-box; background: #fafafa;">
                             </p>
                             <p style="margin-top: 15px;">
-                                <button type="submit" class="button button-secondary button-large" onclick="return confirm('<?php echo esc_js( __( 'Are you sure? Existing settings will be overwritten with the imported settings.', 'gowa-whatsapp' ) ); ?>');" style="display: inline-flex; align-items: center; gap: 6px;">
+                                <button type="submit" class="button button-secondary button-large" onclick="return confirm('<?php echo esc_js( __( 'Are you sure? Existing settings will be overwritten with the imported settings.', 'gowa-notifications' ) ); ?>');" style="display: inline-flex; align-items: center; gap: 6px;">
                                     <span class="dashicons dashicons-upload" style="margin-top: -2px;"></span>
-                                    <?php esc_html_e( 'Upload & Restore Settings', 'gowa-whatsapp' ); ?>
+                                    <?php esc_html_e( 'Upload & Restore Settings', 'gowa-notifications' ); ?>
                                 </button>
                             </p>
                         </form>

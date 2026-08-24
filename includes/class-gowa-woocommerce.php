@@ -68,11 +68,15 @@ class GOWA_WooCommerce {
             }
         }
 
-        // 2. Send Alert to Admin in Background Queue
+        // 2. Send Alert to Multi-Admin in Background Queue
         if ( ! empty( $settings['enable_wc_admin_order'] ) && ! empty( $settings['admin_phone'] ) ) {
-            $admin_tpl = ! empty( $settings['wc_admin_order_msg'] ) ? $settings['wc_admin_order_msg'] : "🛍️ *New Order Received! #{order_id}*\n\nCustomer: {customer_name}\nTotal: {order_total}\nItems: {order_items}\nPhone: {billing_phone}";
+            $admin_tpl = ! empty( $settings['wc_admin_order_msg'] ) ? $settings['wc_admin_order_msg'] : "🛍️ *New Order Received! #{order_id}*\n\nCustomer: {customer_name}\nTotal: {order_total}\nItems:\n{order_items}\nPhone: {billing_phone}";
             $admin_msg = $this->parse_order_tags( $admin_tpl, $order );
-            GOWA_API::queue_message( $settings['admin_phone'], $admin_msg, $order, 'admin_new_order' );
+            
+            $admin_phones = array_filter( array_map( 'trim', explode( ',', $settings['admin_phone'] ) ) );
+            foreach ( $admin_phones as $phone ) {
+                GOWA_API::queue_message( $phone, $admin_msg, $order, 'admin_new_order' );
+            }
         }
     }
 
@@ -139,7 +143,10 @@ class GOWA_WooCommerce {
         );
 
         $message = str_replace( array_keys( $tags ), array_values( $tags ), $template );
-        GOWA_API::queue_message( $settings['admin_phone'], $message, null, 'low_stock' );
+        $admin_phones = array_filter( array_map( 'trim', explode( ',', $settings['admin_phone'] ) ) );
+        foreach ( $admin_phones as $phone ) {
+            GOWA_API::queue_message( $phone, $message, null, 'low_stock' );
+        }
     }
 
     public function on_no_stock( $product ) {
@@ -196,7 +203,7 @@ class GOWA_WooCommerce {
                 <small style="color: #666; display: block; margin-bottom: 5px;"><?php esc_html_e( 'Quick Templates:', 'gowa-notifications' ); ?></small>
                 <button type="button" class="button button-small gowa-tpl-btn" data-tpl="<?php echo esc_attr( sprintf( "Hello %s, your order #%s has been received and is being prepared!", $first_name, $order_id ) ); ?>">Order Update</button>
                 <button type="button" class="button button-small gowa-tpl-btn" data-tpl="<?php echo esc_attr( sprintf( "Hello %s, your order #%s is ready for delivery! Tracking details: ", $first_name, $order_id ) ); ?>">Shipping Info</button>
-                <button type="button" class="button button-small gowa-tpl-btn" data-tpl="<?php echo esc_attr( sprintf( "Hello %s, quick reminder regarding your order #%s. Total: %s", $first_name, $order_id, html_entity_decode( wp_strip_all_tags( wc_price( $order->get_total(), array( 'currency' => $order->get_currency() ) ) ) ) ) ); ?>">Payment</button>
+                <button type="button" class="button button-small gowa-tpl-btn" data-tpl="<?php echo esc_attr( sprintf( "Hello %s, quick reminder regarding your order #%s. Total: %s. Pay here: %s", $first_name, $order_id, html_entity_decode( wp_strip_all_tags( wc_price( $order->get_total(), array( 'currency' => $order->get_currency() ) ) ) ), $order->get_checkout_payment_url() ) ); ?>">Payment</button>
             </div>
 
             <p style="margin-bottom:0;">
@@ -305,7 +312,7 @@ class GOWA_WooCommerce {
 
         $total_formatted = wp_strip_all_tags( html_entity_decode( $order->get_formatted_order_total() ) );
 
-        // Clean up shipping address to clean, comma-separated plain text (strips <br/> tags)
+        // Clean up shipping address to clean, comma-separated plain text
         $raw_address   = $order->get_formatted_shipping_address() ? $order->get_formatted_shipping_address() : $order->get_formatted_billing_address();
         $clean_address = wp_strip_all_tags( str_replace( array( '<br>', '<br/>', '<br />' ), ', ', $raw_address ) );
         $clean_address = trim( preg_replace( '/\s*,\s*/', ', ', $clean_address ), " ,\t\n\r\0\x0B" );
@@ -324,8 +331,11 @@ class GOWA_WooCommerce {
             '{customer_note}'       => $customer_note,
             '{order_total}'         => $total_formatted,
             '{order_items}'         => $items_str,
+            '{items_count}'         => $order->get_item_count(),
             '{shipping_address}'    => $clean_address,
+            '{shipping_method}'     => $order->get_shipping_method() ? $order->get_shipping_method() : 'Standard Shipping',
             '{payment_method}'      => $order->get_payment_method_title(),
+            '{payment_url}'         => $order->get_checkout_payment_url(),
             '{order_date}'          => $order->get_date_created() ? $order->get_date_created()->date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) ) : '',
         );
 

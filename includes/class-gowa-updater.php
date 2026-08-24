@@ -96,6 +96,7 @@ class GOWA_GitHub_Updater {
         }
 
         $github_version = ltrim( $repo_info['tag_name'], 'v' );
+        $sections       = $this->get_sections( $repo_info );
 
         $plugin = array(
             'name'              => 'GOWA Notifications',
@@ -106,14 +107,100 @@ class GOWA_GitHub_Updater {
             'last_updated'      => $repo_info['published_at'],
             'homepage'          => "https://github.com/{$this->username}/{$this->repository}",
             'short_description' => 'Automated and custom notifications for WordPress and WooCommerce powered by self-hosted GOWA.',
-            'sections'          => array(
-                'Description' => 'Automated and custom notifications for WordPress and WooCommerce powered by self-hosted GOWA.',
-                'Changelog'   => isset( $repo_info['body'] ) ? nl2br( esc_html( $repo_info['body'] ) ) : '',
-            ),
+            'sections'          => $sections,
             'download_link'     => ! empty( $repo_info['assets'][0]['browser_download_url'] ) ? $repo_info['assets'][0]['browser_download_url'] : $repo_info['zipball_url'],
         );
 
         return (object) $plugin;
+    }
+
+    /**
+     * Parse and format sections from readme.txt for the WordPress details popup
+     */
+    private function get_sections( $repo_info ) {
+        $sections = array(
+            'description'  => '',
+            'installation' => '',
+            'changelog'    => '',
+        );
+
+        $readme_file = dirname( $this->file ) . '/readme.txt';
+        if ( file_exists( $readme_file ) ) {
+            $content = file_get_contents( $readme_file );
+            if ( preg_match( '/== Description ==(.*?)(== [A-Za-z0-9 ]+ ==|$)/s', $content, $matches ) ) {
+                $sections['description'] = $this->format_readme_markdown( trim( $matches ) );
+            }
+            if ( preg_match( '/== Installation ==(.*?)(== [A-Za-z0-9 ]+ ==|$)/s', $content, $matches ) ) {
+                $sections['installation'] = $this->format_readme_markdown( trim( $matches ) );
+            }
+            if ( preg_match( '/== Changelog ==(.*?)(== [A-Za-z0-9 ]+ ==|$)/s', $content, $matches ) ) {
+                $sections['changelog'] = $this->format_readme_markdown( trim( $matches ) );
+            }
+        }
+
+        // Add latest GitHub release notes to the top of changelog if available
+        if ( ! empty( $repo_info['body'] ) ) {
+            $sections['changelog'] = $this->format_readme_markdown( $repo_info['body'] ) . ( ! empty( $sections['changelog'] ) ? '<hr>' . $sections['changelog'] : '' );
+        }
+
+        if ( empty( $sections['description'] ) ) {
+            $sections['description'] = '<p>Automated and custom notifications for WordPress and WooCommerce powered by self-hosted GOWA (Go WhatsApp Web Multi-Device) REST API gateway.</p>';
+        }
+
+        return $sections;
+    }
+
+    /**
+     * Simple Markdown converter to format readme.txt into clean HTML
+     */
+    private function format_readme_markdown( $text ) {
+        // Headers
+        $text = preg_replace( '/^### (.*)$/m', '<h4>$1</h4>', $text );
+        $text = preg_replace( '/^## (.*)$/m', '<h3>$1</h3>', $text );
+        $text = preg_replace( '/^= (.*) =$/m', '<h3>$1</h3>', $text );
+
+        // Formatting
+        $text = preg_replace( '/\*\*(.*?)\*\*/', '<strong>$1</strong>', $text );
+        $text = preg_replace( '/\*(.*?)\*/', '<em>$1</em>', $text );
+        $text = preg_replace( '/`([^`]+)`/', '<code>$1</code>', $text );
+
+        // Links
+        $text = preg_replace( '/\[(.*?)\]\((.*?)\)/', '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>', $text );
+
+        $lines  = explode( "\n", $text );
+        $output = '';
+        $in_ul  = false;
+        $in_ol  = false;
+
+        foreach ( $lines as $line ) {
+            $trimmed = trim( $line );
+            if ( empty( $trimmed ) ) {
+                if ( $in_ul ) { $output .= "</ul>\n"; $in_ul = false; }
+                if ( $in_ol ) { $output .= "</ol>\n"; $in_ol = false; }
+                continue;
+            }
+
+            if ( strpos( $trimmed, '* ' ) === 0 || strpos( $trimmed, '- ' ) === 0 ) {
+                if ( ! $in_ul ) { $output .= "<ul>\n"; $in_ul = true; }
+                $output .= '<li>' . substr( $trimmed, 2 ) . "</li>\n";
+            } elseif ( preg_match( '/^[0-9]+\.\s+(.*)$/', $trimmed, $m ) ) {
+                if ( ! $in_ol ) { $output .= "<ol>\n"; $in_ol = true; }
+                $output .= '<li>' . $m . "</li>\n";
+            } else {
+                if ( $in_ul ) { $output .= "</ul>\n"; $in_ul = false; }
+                if ( $in_ol ) { $output .= "</ol>\n"; $in_ol = false; }
+                if ( strpos( $trimmed, '<h' ) === 0 || strpos( $trimmed, '<hr' ) === 0 ) {
+                    $output .= $trimmed . "\n";
+                } else {
+                    $output .= '<p>' . $trimmed . "</p>\n";
+                }
+            }
+        }
+
+        if ( $in_ul ) { $output .= "</ul>\n"; }
+        if ( $in_ol ) { $output .= "</ol>\n"; }
+
+        return $output;
     }
 
     public function after_install( $response, $hook_extra, $result ) {

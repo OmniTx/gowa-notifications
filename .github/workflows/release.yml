@@ -1,4 +1,4 @@
-name: Build & Release Plugin
+name: Build & Release (GitHub Only)
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  build-and-release:
+  github-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -18,7 +18,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Extract Tag Annotation / Release Notes
+      - name: Extract Tag Release Notes
         id: tag_notes
         run: |
           NOTES=$(git tag -l --format='%(contents)' ${{ github.ref_name }})
@@ -29,7 +29,7 @@ jobs:
           echo "$NOTES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Package GitHub Release (Includes Updater)
+      - name: Package GitHub Release Archive
         run: |
           mkdir -p build/gowa-notifications
           rsync -av --progress ./ build/gowa-notifications/ \
@@ -38,6 +38,7 @@ jobs:
             --exclude '.vscode' \
             --exclude 'build' \
             --exclude '.gitignore' \
+            --exclude '.distignore' \
             --exclude '*.zip'
           
           cd build
@@ -45,7 +46,7 @@ jobs:
           cd ..
           ls -lh gowa-notifications.zip
 
-      - name: Create GitHub Release & Upload Asset
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: gowa-notifications.zip

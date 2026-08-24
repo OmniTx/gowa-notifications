@@ -37,8 +37,11 @@ class GOWA_Notifications {
             '{date}'       => current_time( 'mysql' ),
         );
 
-        $message = str_replace( array_keys( $tags ), array_values( $tags ), $template );
-        GOWA_API::queue_message( $settings['admin_phone'], $message, null, 'wp_user_register' );
+        $message      = str_replace( array_keys( $tags ), array_values( $tags ), $template );
+        $admin_phones = array_filter( array_map( 'trim', explode( ',', $settings['admin_phone'] ) ) );
+        foreach ( $admin_phones as $phone ) {
+            GOWA_API::queue_message( $phone, $message, null, 'wp_user_register' );
+        }
     }
 
     public function on_new_comment( $comment_id, $comment_approved, $commentdata ) {
@@ -63,8 +66,11 @@ class GOWA_Notifications {
             '{date}'             => current_time( 'mysql' ),
         );
 
-        $message = str_replace( array_keys( $tags ), array_values( $tags ), $template );
-        GOWA_API::queue_message( $settings['admin_phone'], $message, null, 'wp_comment' );
+        $message      = str_replace( array_keys( $tags ), array_values( $tags ), $template );
+        $admin_phones = array_filter( array_map( 'trim', explode( ',', $settings['admin_phone'] ) ) );
+        foreach ( $admin_phones as $phone ) {
+            GOWA_API::queue_message( $phone, $message, null, 'wp_comment' );
+        }
     }
 }
 

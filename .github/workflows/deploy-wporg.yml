@@ -1,0 +1,25 @@
+name: Deploy to WordPress.org (Manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Git Tag / Version to Deploy (e.g. 1.4.0)'
+        required: true
+        default: '1.4.0'
+
+jobs:
+  deploy-wporg:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag }}
+
+      - name: Deploy to WordPress.org SVN
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: gowa-notifications

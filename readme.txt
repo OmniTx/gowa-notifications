@@ -5,7 +5,7 @@ Tags: notifications, woocommerce alerts, order notifications, gateway, messaging
 Requires at least: 5.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -49,6 +49,11 @@ This plugin connects to a self-hosted instance of GOWA (Go WhatsApp Web Multi-De
 4. Verify your connection on the **Direct Client Message / Test** tab.
 
 == Changelog ==
+
+= 1.4.1 =
+* Feature: Added multi-admin support (enter multiple phone numbers separated by commas).
+* Feature: Added new dynamic message placeholders: {payment_url}, {shipping_method}, {items_count}, and {customer_email}.
+* Fix: Resolved admin menu slug mismatch on Plugins page.
 
 = 1.4.0 =
 * Feature: Added Action Scheduler asynchronous background queueing for non-blocking notification dispatch.
