@@ -90,24 +90,24 @@ class GOWA_WooCommerce {
 
         $settings = get_option( 'gowa_whatsapp_settings', array() );
 
-        // 1. Send Receipt to Client in Background Queue
+        // 1. Send Receipt to Client
         if ( ! empty( $settings['enable_wc_cust_process'] ) ) {
             $customer_phone = method_exists( $order, 'get_billing_phone' ) ? $order->get_billing_phone() : '';
             if ( ! empty( $customer_phone ) ) {
                 $default_tpl = ! empty( $settings['wc_cust_process_msg'] ) ? $settings['wc_cust_process_msg'] : "Hello {customer_name},\n\nThank you for your order *#{order_id}* at {site_name}! We have received your order and it is currently being processed.\n\nTotal: {order_total}\nItems: {order_items}\n\nWe will contact you shortly for delivery.";
                 $message     = $this->parse_order_tags( $default_tpl, $order );
-                GOWA_API::queue_message( $customer_phone, $message, $order, 'order_received' );
+                GOWA_API::send_message( $customer_phone, $message, $order, 'order_received' );
             }
         }
 
-        // 2. Send Alert to Multi-Admin in Background Queue
+        // 2. Send Alert to Multi-Admin
         if ( ! empty( $settings['enable_wc_admin_order'] ) && ! empty( $settings['admin_phone'] ) ) {
             $admin_tpl = ! empty( $settings['wc_admin_order_msg'] ) ? $settings['wc_admin_order_msg'] : "🛍️ *New Order Received! #{order_id}*\n\nCustomer: {customer_name}\nTotal: {order_total}\nItems:\n{order_items}\nPhone: {billing_phone}";
             $admin_msg = $this->parse_order_tags( $admin_tpl, $order );
             
             $admin_phones = array_filter( array_map( 'trim', explode( ',', $settings['admin_phone'] ) ) );
             foreach ( $admin_phones as $phone ) {
-                GOWA_API::queue_message( $phone, $admin_msg, $order, 'admin_new_order' );
+                GOWA_API::send_message( $phone, $admin_msg, $order, 'admin_new_order' );
             }
         }
 
@@ -129,11 +129,11 @@ class GOWA_WooCommerce {
         if ( ! $order ) {
             $order = wc_get_order( $order_id );
         }
-        if ( ! $order ) {
+        if ( ! $order || ! is_object( $order ) ) {
             return;
         }
 
-        $customer_phone = $order->get_billing_phone();
+        $customer_phone = method_exists( $order, 'get_billing_phone' ) ? $order->get_billing_phone() : '';
         if ( empty( $customer_phone ) ) {
             return;
         }
@@ -141,7 +141,7 @@ class GOWA_WooCommerce {
         $template = ! empty( $settings['wc_cust_complete_msg'] ) ? $settings['wc_cust_complete_msg'] : "Hello {customer_name},\n\nYour order *#{order_id}* has been completed! 🎉\n\nThank you for shopping with {site_name}.";
         $message  = $this->parse_order_tags( $template, $order );
 
-        GOWA_API::queue_message( $customer_phone, $message, $order, 'order_completed' );
+        GOWA_API::send_message( $customer_phone, $message, $order, 'order_completed' );
     }
 
     public function on_order_cancelled( $order_id, $order = null ) {
@@ -153,11 +153,11 @@ class GOWA_WooCommerce {
         if ( ! $order ) {
             $order = wc_get_order( $order_id );
         }
-        if ( ! $order ) {
+        if ( ! $order || ! is_object( $order ) ) {
             return;
         }
 
-        $customer_phone = $order->get_billing_phone();
+        $customer_phone = method_exists( $order, 'get_billing_phone' ) ? $order->get_billing_phone() : '';
         if ( empty( $customer_phone ) ) {
             return;
         }
@@ -165,7 +165,7 @@ class GOWA_WooCommerce {
         $template = ! empty( $settings['wc_cust_cancelled_msg'] ) ? $settings['wc_cust_cancelled_msg'] : "Hello {customer_name},\n\nYour order *#{order_id}* at {site_name} has been cancelled.";
         $message  = $this->parse_order_tags( $template, $order );
 
-        GOWA_API::queue_message( $customer_phone, $message, $order, 'order_cancelled' );
+        GOWA_API::send_message( $customer_phone, $message, $order, 'order_cancelled' );
     }
 
     public function on_low_stock( $product ) {
@@ -174,18 +174,22 @@ class GOWA_WooCommerce {
             return;
         }
 
+        if ( ! is_object( $product ) || ! method_exists( $product, 'get_id' ) ) {
+            return;
+        }
+
         $template = ! empty( $settings['wc_low_stock_msg'] ) ? $settings['wc_low_stock_msg'] : "⚠️ *Low Stock Alert*\n\nProduct: {product_name} (ID: {product_id})\nRemaining: {stock_quantity}";
         $tags = array(
             '{product_id}'     => $product->get_id(),
-            '{product_name}'   => $product->get_name(),
-            '{stock_quantity}' => $product->get_stock_quantity(),
+            '{product_name}'   => method_exists( $product, 'get_name' ) ? $product->get_name() : '',
+            '{stock_quantity}' => method_exists( $product, 'get_stock_quantity' ) ? $product->get_stock_quantity() : '',
             '{site_name}'      => get_bloginfo( 'name' ),
         );
 
         $message = str_replace( array_keys( $tags ), array_values( $tags ), $template );
         $admin_phones = array_filter( array_map( 'trim', explode( ',', $settings['admin_phone'] ) ) );
         foreach ( $admin_phones as $phone ) {
-            GOWA_API::queue_message( $phone, $message, null, 'low_stock' );
+            GOWA_API::send_message( $phone, $message, null, 'low_stock' );
         }
     }
 

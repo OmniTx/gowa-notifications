@@ -40,7 +40,7 @@ class GOWA_Notifications {
         $message      = str_replace( array_keys( $tags ), array_values( $tags ), $template );
         $admin_phones = array_filter( array_map( 'trim', explode( ',', $settings['admin_phone'] ) ) );
         foreach ( $admin_phones as $phone ) {
-            GOWA_API::queue_message( $phone, $message, null, 'wp_user_register' );
+            GOWA_API::send_message( $phone, $message, null, 'wp_user_register' );
         }
     }
 
@@ -69,7 +69,7 @@ class GOWA_Notifications {
         $message      = str_replace( array_keys( $tags ), array_values( $tags ), $template );
         $admin_phones = array_filter( array_map( 'trim', explode( ',', $settings['admin_phone'] ) ) );
         foreach ( $admin_phones as $phone ) {
-            GOWA_API::queue_message( $phone, $message, null, 'wp_comment' );
+            GOWA_API::send_message( $phone, $message, null, 'wp_comment' );
         }
     }
 }
