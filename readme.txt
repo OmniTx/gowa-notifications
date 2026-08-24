@@ -5,7 +5,7 @@ Tags: notifications, woocommerce alerts, order notifications, gateway, messaging
 Requires at least: 5.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.4.5
+Stable tag: 1.4.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -49,6 +49,11 @@ This plugin connects to a self-hosted instance of GOWA (Go WhatsApp Web Multi-De
 4. Verify your connection on the **Direct Client Message / Test** tab.
 
 == Changelog ==
+
+= 1.4.6 =
+* Feature: Added optional Background Delay setting for automated messages to eliminate checkout latency.
+* Improvement: Integrated Action Scheduler fallback for background deferred queues.
+* Fix: Resolved corrupted HTML in settings tab that was inadvertently wiping database configurations.
 
 = 1.4.5 =
 * Fix: Added full status transition triggers (`woocommerce_order_status_processing`, `woocommerce_order_status_on-hold`, `woocommerce_payment_complete`, `woocommerce_thankyou`) for Cash on Delivery (COD) and all payment gateways.
