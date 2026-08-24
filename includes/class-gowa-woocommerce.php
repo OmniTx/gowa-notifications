@@ -10,8 +10,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 class GOWA_WooCommerce {
 
     public function __construct() {
-        // Automatic Order Status Triggers
-        add_action( 'woocommerce_new_order', array( $this, 'on_new_order_receipt' ), 20, 1 );
+        // Trigger after checkout is fully processed (billing phone is available)
+        add_action( 'woocommerce_checkout_order_processed', array( $this, 'on_new_order_receipt' ), 20, 1 );
         add_action( 'woocommerce_order_status_completed', array( $this, 'on_order_completed' ), 20, 1 );
         add_action( 'woocommerce_order_status_cancelled', array( $this, 'on_order_cancelled' ), 20, 2 );
 
@@ -147,9 +147,19 @@ class GOWA_WooCommerce {
     }
 
     public function register_order_metabox() {
-        $screen = class_exists( '\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController' ) && wc_get_container()->get( \Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled()
-            ? wc_get_page_screen_id( 'shop_order' )
-            : 'shop_order';
+        $screen = 'shop_order';
+
+        try {
+            if (
+                class_exists( '\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController' )
+                && function_exists( 'wc_get_container' )
+                && wc_get_container()->get( \Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class )->custom_orders_table_usage_is_enabled()
+            ) {
+                $screen = wc_get_page_screen_id( 'shop_order' );
+            }
+        } catch ( \Exception $e ) {
+            // Fallback to legacy screen
+        }
 
         add_meta_box(
             'gowa_whatsapp_order_metabox',
