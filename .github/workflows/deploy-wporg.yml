@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Git Tag / Version to Deploy (e.g. 1.4.8)'
+        description: 'Git Tag / Version to Deploy (e.g. 1.4.8.1)'
         required: true
-        default: '1.4.8'
+        default: '1.4.8.1'
 
 jobs:
   deploy-wporg:

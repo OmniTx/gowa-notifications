@@ -12,11 +12,10 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 delete_option( 'gowa_whatsapp_settings' );
 
 // For multisite installations, delete option across all network blogs
-if ( is_multisite() ) {
-    global $wpdb;
-    $blog_ids = $wpdb->get_col( "SELECT blog_id FROM $wpdb->blogs" );
-    foreach ( $blog_ids as $blog_id ) {
-        switch_to_blog( $blog_id );
+if ( is_multisite() && function_exists( 'get_sites' ) ) {
+    $gowa_blog_ids = get_sites( array( 'fields' => 'ids' ) );
+    foreach ( $gowa_blog_ids as $gowa_blog_id ) {
+        switch_to_blog( $gowa_blog_id );
         delete_option( 'gowa_whatsapp_settings' );
         restore_current_blog();
     }
