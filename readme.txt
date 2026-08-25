@@ -1,5 +1,5 @@
 === Notify with GOWA ===
-Contributors: omnitx, imranahmed, imranomnitx
+Contributors: imranomnitx
 Donate link: https://imran.mvp.bd
 Tags: notifications, woocommerce alerts, order notifications, gateway, messaging
 Requires at least: 5.6
