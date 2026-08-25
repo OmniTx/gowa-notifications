@@ -42,14 +42,18 @@ jobs:
             --exclude '*.zip'
           
           cd build
-          zip -r ../notify-with-gowa.zip notify-with-gowa/
+          zip -r ../notify-with-gowa-github-standalone.zip notify-with-gowa/
+          rm notify-with-gowa/includes/class-gowa-updater.php
+          zip -r ../notify-with-gowa-wporg.zip notify-with-gowa/
           cd ..
           ls -lh notify-with-gowa.zip
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: notify-with-gowa.zip
+          files: |
+            notify-with-gowa-github-standalone.zip
+            notify-with-gowa-wporg.zip
           body: ${{ steps.tag_notes.outputs.notes }}
           draft: false
           prerelease: false
