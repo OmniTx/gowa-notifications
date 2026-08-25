@@ -46,14 +46,19 @@ jobs:
           rm notify-with-gowa/includes/class-gowa-updater.php
           zip -r ../notify-with-gowa-wporg.zip notify-with-gowa/
           cd ..
-          ls -lh notify-with-gowa.zip
+          ls -lh *.zip
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            notify-with-gowa-github-standalone.zip
-            notify-with-gowa-wporg.zip
+          files: notify-with-gowa-github-standalone.zip
           body: ${{ steps.tag_notes.outputs.notes }}
           draft: false
           prerelease: false
+
+      - name: Upload WP.org Version to Actions Tab
+        uses: actions/upload-artifact@v4
+        with:
+          name: notify-with-gowa-wporg
+          path: notify-with-gowa-wporg.zip
+
