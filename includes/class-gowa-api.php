@@ -66,7 +66,8 @@ class GOWA_API {
             return array(
                 'success' => true,
                 'queued'  => true,
-                'message' => s/* translators: %1$s is the URL, %2$s is the error message */`n            printf( __( 'Message scheduled for background delivery in %d seconds.', 'notify-with-gowa' ), $delay_seconds ),
+                /* translators: %d is the delay in seconds */
+                'message' => sprintf( __( 'Message scheduled for background delivery in %d seconds.', 'notify-with-gowa' ), $delay_seconds ),
             );
         }
 
@@ -100,7 +101,8 @@ class GOWA_API {
 
         $phone = self::format_phone( $raw_phone );
         if ( empty( $phone ) ) {
-            $err = s/* translators: %1$s is the URL, %2$s is the error message */`n            printf( __( 'Invalid recipient phone number: %s', 'notify-with-gowa' ), esc_html( $raw_phone ) );
+            /* translators: %s is the raw phone number */
+            $err = sprintf( __( 'Invalid recipient phone number: %1$s', 'notify-with-gowa' ), esc_html( $raw_phone ) );
             if ( $order && method_exists( $order, 'add_order_note' ) ) {
                 $order->add_order_note( "❌ WhatsApp Error ({$event_label}): " . $err );
             }
@@ -166,7 +168,8 @@ class GOWA_API {
             self::log_error( 'GOWA API Connection Failed: ' . $error_msg );
             return array(
                 'success' => false,
-                'message' => s/* translators: %1$s is the URL, %2$s is the error message */`n            printf( __( 'Connection failed to %1$s: %2$s', 'notify-with-gowa' ), esc_url( $endpoint ), $error_msg ),
+                /* translators: %1$s is the URL, %2$s is the error message */
+                'message' => sprintf( __( 'Connection failed to %1$s: %2$s', 'notify-with-gowa' ), esc_url( $endpoint ), $error_msg ),
                 'debug'   => array( 'endpoint' => $endpoint, 'error' => $error_msg ),
             );
         }
@@ -194,7 +197,8 @@ class GOWA_API {
 
             return array(
                 'success'    => true,
-                'message'    => s/* translators: %1$s is the URL, %2$s is the error message */`n            printf( __( 'WhatsApp message delivered to %1$s (ID: %2$s)', 'notify-with-gowa' ), esc_html( $phone ), esc_html( $msg_id ) ),
+                /* translators: %1$s is the destination, %2$s is the message ID */
+                'message'    => sprintf( __( 'WhatsApp message delivered to %1$s (ID: %2$s)', 'notify-with-gowa' ), esc_html( $phone ), esc_html( $msg_id ) ),
                 'message_id' => $msg_id,
                 'data'       => $data,
             );
@@ -304,7 +308,8 @@ class GOWA_API {
 
         return array(
             'success' => false,
-            'message' => s/* translators: %1$s is the URL, %2$s is the error message */`n            printf( __( 'Could not connect to GOWA server at %1$s. %2$s', 'notify-with-gowa' ), esc_url( $api_url ), ( $last_error ? 'Error: ' . $last_error : 'Server returned an invalid HTTP response.' ) ),
+            /* translators: %1$s is the URL, %2$s is the error message */
+                'message' => sprintf( __( 'Could not connect to GOWA server at %1$s. %2$s', 'notify-with-gowa' ), esc_url( $api_url ), ( $last_error ? 'Error: ' . $last_error : 'Server returned an invalid HTTP response.' ) ),
             'api_url' => $api_url,
             'error'   => $last_error,
         );
