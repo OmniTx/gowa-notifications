@@ -315,9 +315,9 @@ class GOWA_WooCommerce {
                     success: function(res) {
                         btn.prop('disabled', false).html('<span class=\"dashicons dashicons-whatsapp\" style=\"vertical-align: middle; margin-top:-2px;\"></span> Send WhatsApp to Client');
                         if (res.success) {
-                            status.css('color', '#46b450').text('✓ ' + res.data.message).fadeIn();
+                            status.css('color', '#46b450').text(res.data.message).fadeIn();
                         } else {
-                            status.css('color', '#dc3232').text('✕ ' + res.data.message).fadeIn();
+                            status.css('color', '#dc3232').text(res.data.message).fadeIn();
                         }
                     },
                     error: function() {
@@ -327,7 +327,6 @@ class GOWA_WooCommerce {
                 });
             });
         " );
-        <?php
     }
 
     public function ajax_send_order_custom_msg() {
