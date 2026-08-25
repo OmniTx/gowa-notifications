@@ -41,7 +41,7 @@ class GOWA_Admin {
             'nwg_ajax',
             array(
                 'ajaxurl' => admin_url( 'admin-ajax.php' ),
-                'nonce'   => wp_create_nonce( 'gowa_ajax_test_nonce' ),
+                'nonce'   => wp_create_nonce( 'gowa_admin_ajax_nonce' ),
             )
         );
     }

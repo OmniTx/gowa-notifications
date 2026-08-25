@@ -5,7 +5,7 @@ Tags: notifications, woocommerce alerts, order notifications, gateway, messaging
 Requires at least: 5.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.4.8.2
+Stable tag: 1.4.8.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -49,6 +49,9 @@ This plugin connects to a self-hosted instance of GOWA (Go WhatsApp Web Multi-De
 4. Verify your connection on the **Direct Client Message / Test** tab.
 
 == Changelog ==
+
+= 1.4.8.3 =
+- Fix AJAX nonce mismatch for admin connection check and direct message
 
 = 1.4.8.2 =
 - Fix syntax error in WooCommerce order metabox

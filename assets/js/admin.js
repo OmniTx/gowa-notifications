@@ -38,15 +38,16 @@ jQuery(document).ready(function($) {
             success: function(res) {
                 btn.prop('disabled', false).html('<span class="dashicons dashicons-whatsapp" style="vertical-align: middle; margin-top:-2px;"></span> Send Message via WhatsApp');
                 if (res.success) {
-                    statusBox.html('<div class="notice notice-success inline" style="padding:10px 15px; margin:0;"><p style="font-weight:bold; color:#155724;">✓ ' + res.data.message + '</p></div>').fadeIn();
+                    statusBox.html('<div class="notice notice-success inline" style="padding:10px 15px; margin:0;"><p style="font-weight:bold; color:#155724;">' + res.data.message + '</p></div>').fadeIn();
                 } else {
-                    var errMsg = res.data ? res.data.message : 'Unknown error';
-                    statusBox.html('<div class="notice notice-error inline" style="padding:10px 15px; margin:0;"><p style="font-weight:bold; color:#721c24;">✕ Send Failed: ' + errMsg + '</p></div>').fadeIn();
+                    var errMsg = (res.data && res.data.message) ? res.data.message : 'Unknown error';
+                    statusBox.html('<div class="notice notice-error inline" style="padding:10px 15px; margin:0;"><p style="font-weight:bold; color:#721c24;">Send Failed: ' + errMsg + '</p></div>').fadeIn();
                 }
             },
             error: function(xhr, status, error) {
                 btn.prop('disabled', false).html('<span class="dashicons dashicons-whatsapp" style="vertical-align: middle; margin-top:-2px;"></span> Send Message via WhatsApp');
-                statusBox.html('<div class="notice notice-error inline" style="padding:10px 15px; margin:0;"><p style="font-weight:bold; color:#721c24;">✕ Server AJAX Error: ' + error + '</p></div>').fadeIn();
+                var errText = error ? error : (xhr.responseText ? xhr.responseText : status);
+                statusBox.html('<div class="notice notice-error inline" style="padding:10px 15px; margin:0;"><p style="font-weight:bold; color:#721c24;">Server AJAX Error: ' + errText + '</p></div>').fadeIn();
             }
         });
     });
@@ -70,15 +71,16 @@ jQuery(document).ready(function($) {
             success: function(res) {
                 btn.prop('disabled', false).html('<span class="dashicons dashicons-rest-api" style="vertical-align: middle; margin-top:-2px;"></span> Check GOWA Connection');
                 if (res.success) {
-                    statusBox.html('<div class="notice notice-success inline" style="padding:10px 15px; margin:0;"><p style="font-weight:bold; color:#155724;">✓ ' + res.data.message + '</p></div>').fadeIn();
+                    statusBox.html('<div class="notice notice-success inline" style="padding:10px 15px; margin:0;"><p style="font-weight:bold; color:#155724;">' + res.data.message + '</p></div>').fadeIn();
                 } else {
-                    var errMsg = res.data ? res.data.message : 'Unknown error';
-                    statusBox.html('<div class="notice notice-error inline" style="padding:10px 15px; margin:0;"><p style="font-weight:bold; color:#721c24;">✕ Gateway Connection Failed: ' + errMsg + '</p></div>').fadeIn();
+                    var errMsg = (res.data && res.data.message) ? res.data.message : 'Unknown error';
+                    statusBox.html('<div class="notice notice-error inline" style="padding:10px 15px; margin:0;"><p style="font-weight:bold; color:#721c24;">Gateway Connection Failed: ' + errMsg + '</p></div>').fadeIn();
                 }
             },
             error: function(xhr, status, error) {
                 btn.prop('disabled', false).html('<span class="dashicons dashicons-rest-api" style="vertical-align: middle; margin-top:-2px;"></span> Check GOWA Connection');
-                statusBox.html('<div class="notice notice-error inline" style="padding:10px 15px; margin:0;"><p style="font-weight:bold; color:#721c24;">✕ Server AJAX Error: ' + error + '</p></div>').fadeIn();
+                var errText = error ? error : (xhr.responseText ? xhr.responseText : status);
+                statusBox.html('<div class="notice notice-error inline" style="padding:10px 15px; margin:0;"><p style="font-weight:bold; color:#721c24;">Server AJAX Error: ' + errText + '</p></div>').fadeIn();
             }
         });
     });
