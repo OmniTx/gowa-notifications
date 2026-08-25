@@ -60,13 +60,13 @@ class GOWA_API {
                     'order_id'    => $order_id,
                     'event_label' => $event_label,
                 ),
-                'gowa-notifications'
+                'notify-with-gowa'
             );
 
             return array(
                 'success' => true,
                 'queued'  => true,
-                'message' => sprintf( __( 'Message scheduled for background delivery in %d seconds.', 'gowa-notifications' ), $delay_seconds ),
+                'message' => sprintf( __( 'Message scheduled for background delivery in %d seconds.', 'notify-with-gowa' ), $delay_seconds ),
             );
         }
 
@@ -100,7 +100,7 @@ class GOWA_API {
 
         $phone = self::format_phone( $raw_phone );
         if ( empty( $phone ) ) {
-            $err = sprintf( __( 'Invalid recipient phone number: %s', 'gowa-notifications' ), esc_html( $raw_phone ) );
+            $err = sprintf( __( 'Invalid recipient phone number: %s', 'notify-with-gowa' ), esc_html( $raw_phone ) );
             if ( $order && method_exists( $order, 'add_order_note' ) ) {
                 $order->add_order_note( "❌ WhatsApp Error ({$event_label}): " . $err );
             }
@@ -111,7 +111,7 @@ class GOWA_API {
         }
 
         if ( empty( $config['api_url'] ) ) {
-            $err = __( 'GOWA API URL is not configured. Please configure your settings in Settings > GOWA Notifications.', 'gowa-notifications' );
+            $err = __( 'GOWA API URL is not configured. Please configure your settings in Settings > Notify with GOWA.', 'notify-with-gowa' );
             if ( $order && method_exists( $order, 'add_order_note' ) ) {
                 $order->add_order_note( "❌ WhatsApp Error ({$event_label}): " . $err );
             }
@@ -166,7 +166,7 @@ class GOWA_API {
             self::log_error( 'GOWA API Connection Failed: ' . $error_msg );
             return array(
                 'success' => false,
-                'message' => sprintf( __( 'Connection failed to %s: %s', 'gowa-notifications' ), esc_url( $endpoint ), $error_msg ),
+                'message' => sprintf( __( 'Connection failed to %s: %s', 'notify-with-gowa' ), esc_url( $endpoint ), $error_msg ),
                 'debug'   => array( 'endpoint' => $endpoint, 'error' => $error_msg ),
             );
         }
@@ -194,7 +194,7 @@ class GOWA_API {
 
             return array(
                 'success'    => true,
-                'message'    => sprintf( __( 'WhatsApp message delivered to %s (ID: %s)', 'gowa-notifications' ), esc_html( $phone ), esc_html( $msg_id ) ),
+                'message'    => sprintf( __( 'WhatsApp message delivered to %s (ID: %s)', 'notify-with-gowa' ), esc_html( $phone ), esc_html( $msg_id ) ),
                 'message_id' => $msg_id,
                 'data'       => $data,
             );
@@ -229,7 +229,7 @@ class GOWA_API {
         if ( empty( $api_url ) ) {
             return array(
                 'success' => false,
-                'message' => __( 'GOWA API URL is empty. Please enter your server URL.', 'gowa-notifications' ),
+                'message' => __( 'GOWA API URL is empty. Please enter your server URL.', 'notify-with-gowa' ),
             );
         }
 
@@ -279,7 +279,7 @@ class GOWA_API {
             if ( $code === 401 ) {
                 return array(
                     'success'  => false,
-                    'message'  => __( 'Authentication Failed (401 Unauthorized). Please check your Basic Auth Username and Password.', 'gowa-notifications' ),
+                    'message'  => __( 'Authentication Failed (401 Unauthorized). Please check your Basic Auth Username and Password.', 'notify-with-gowa' ),
                     'endpoint' => $url,
                 );
             }
@@ -294,7 +294,7 @@ class GOWA_API {
         if ( ! empty( $connected_endpoint ) ) {
             return array(
                 'success'   => true,
-                'message'   => __( 'Connected to GOWA Server successfully!', 'gowa-notifications' ),
+                'message'   => __( 'Connected to GOWA Server successfully!', 'notify-with-gowa' ),
                 'api_url'   => $api_url,
                 'endpoint'  => $connected_endpoint,
                 'device_id' => $config['device_id'],
@@ -304,7 +304,7 @@ class GOWA_API {
 
         return array(
             'success' => false,
-            'message' => sprintf( __( 'Could not connect to GOWA server at %s. %s', 'gowa-notifications' ), esc_url( $api_url ), ( $last_error ? 'Error: ' . $last_error : 'Server returned an invalid HTTP response.' ) ),
+            'message' => sprintf( __( 'Could not connect to GOWA server at %s. %s', 'notify-with-gowa' ), esc_url( $api_url ), ( $last_error ? 'Error: ' . $last_error : 'Server returned an invalid HTTP response.' ) ),
             'api_url' => $api_url,
             'error'   => $last_error,
         );
@@ -340,7 +340,7 @@ class GOWA_API {
 
     public static function log_error( $message ) {
         if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-            error_log( '[GOWA Notifications] ' . $message );
+            error_log( '[Notify with GOWA] ' . $message );
         }
     }
 }

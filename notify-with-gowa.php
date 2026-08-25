@@ -1,12 +1,12 @@
 <?php
 /**
- * Plugin Name:       GOWA Notifications
- * Plugin URI:        https://github.com/omnitx/gowa-notifications
+ * Plugin Name:       Notify with GOWA
+ * Plugin URI:        https://github.com/omnitx/notify-with-gowa
  * Description:       Automated and custom notifications for WordPress and WooCommerce powered by the self-hosted GOWA (Go WhatsApp Web Multi-Device) REST API gateway.
  * Version:           1.4.6
  * Author:            Imran Ahmed
  * Author URI:        https://imran.mvp.bd
- * Text Domain:       gowa-notifications
+ * Text Domain:       notify-with-gowa
  * Domain Path:       /languages
  * Requires at least: 5.6
  * Requires PHP:      7.4
@@ -44,7 +44,7 @@ class GOWA_WhatsApp_Plugin {
 
     private function load_dependencies() {
         require_once GOWA_PLUGIN_DIR . 'includes/class-gowa-api.php';
-        require_once GOWA_PLUGIN_DIR . 'includes/class-gowa-notifications.php';
+        require_once GOWA_PLUGIN_DIR . 'includes/class-notify-with-gowa.php';
         
         if ( class_exists( 'WooCommerce' ) || in_array( 'woocommerce/woocommerce.php', (array) get_option( 'active_plugins', array() ), true ) ) {
             require_once GOWA_PLUGIN_DIR . 'includes/class-gowa-woocommerce.php';
@@ -71,7 +71,6 @@ class GOWA_WhatsApp_Plugin {
     }
 
     private function init_hooks() {
-        add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
         add_action( 'before_woocommerce_init', array( $this, 'declare_hpos_compatibility' ) );
         add_filter( 'plugin_action_links_' . GOWA_PLUGIN_BASENAME, array( $this, 'add_action_links' ) );
         
@@ -87,12 +86,8 @@ class GOWA_WhatsApp_Plugin {
         }
     }
 
-    public function load_textdomain() {
-        load_plugin_textdomain( 'gowa-notifications', false, dirname( GOWA_PLUGIN_BASENAME ) . '/languages' );
-    }
-
     public function add_action_links( $links ) {
-        $settings_link = '<a href="' . admin_url( 'options-general.php?page=gowa-notifications' ) . '">' . __( 'Settings', 'gowa-notifications' ) . '</a>';
+        $settings_link = '<a href="' . admin_url( 'options-general.php?page=notify-with-gowa' ) . '">' . __( 'Settings', 'notify-with-gowa' ) . '</a>';
         array_unshift( $links, $settings_link );
         return $links;
     }

@@ -2,8 +2,8 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: GOWA Notifications 1.4.1\n"
-"Report-Msgid-Bugs-To: https://github.com/omnitx/gowa-notifications\n"
+"Project-Id-Version: Notify with GOWA 1.4.1\n"
+"Report-Msgid-Bugs-To: https://github.com/omnitx/notify-with-gowa\n"
 "POT-Creation-Date: 2026-08-20 05:52:00+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Language: \n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: gowa-notifications.php:57
+#: notify-with-gowa.php:57
 msgid "Settings"
 msgstr ""
 

@@ -14,7 +14,7 @@ class GOWA_GitHub_Updater {
     private $basename;
     private $active;
     private $username   = 'OmniTx';
-    private $repository = 'gowa-notifications';
+    private $repository = 'notify-with-gowa';
     private $github_response;
 
     public function __construct( $file ) {
@@ -99,7 +99,7 @@ class GOWA_GitHub_Updater {
         $sections       = $this->get_sections( $repo_info );
 
         $plugin = array(
-            'name'              => 'GOWA Notifications',
+            'name'              => 'Notify with GOWA',
             'slug'              => dirname( $this->basename ),
             'version'           => $github_version,
             'author'            => '<a href="https://imran.mvp.bd">Imran Ahmed</a>',
@@ -218,5 +218,5 @@ class GOWA_GitHub_Updater {
 }
 
 if ( is_admin() ) {
-    new GOWA_GitHub_Updater( GOWA_PLUGIN_DIR . 'gowa-notifications.php' );
+    new GOWA_GitHub_Updater( GOWA_PLUGIN_DIR . 'notify-with-gowa.php' );
 }

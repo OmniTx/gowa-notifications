@@ -31,8 +31,8 @@ jobs:
 
       - name: Package GitHub Release Archive
         run: |
-          mkdir -p build/gowa-notifications
-          rsync -av --progress ./ build/gowa-notifications/ \
+          mkdir -p build/notify-with-gowa
+          rsync -av --progress ./ build/notify-with-gowa/ \
             --exclude '.git' \
             --exclude '.github' \
             --exclude '.vscode' \
@@ -42,14 +42,14 @@ jobs:
             --exclude '*.zip'
           
           cd build
-          zip -r ../gowa-notifications.zip gowa-notifications/
+          zip -r ../notify-with-gowa.zip notify-with-gowa/
           cd ..
-          ls -lh gowa-notifications.zip
+          ls -lh notify-with-gowa.zip
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: gowa-notifications.zip
+          files: notify-with-gowa.zip
           body: ${{ steps.tag_notes.outputs.notes }}
           draft: false
           prerelease: false

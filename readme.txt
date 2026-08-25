@@ -1,5 +1,5 @@
-=== GOWA Notifications ===
-Contributors: omnitx, imranahmed
+=== Notify with GOWA ===
+Contributors: omnitx, imranahmed, imranomnitx
 Donate link: https://imran.mvp.bd
 Tags: notifications, woocommerce alerts, order notifications, gateway, messaging
 Requires at least: 5.6
@@ -13,7 +13,7 @@ Automated and custom notifications for WordPress and WooCommerce powered by the 
 
 == Description ==
 
-**GOWA Notifications** bridges your WordPress site and WooCommerce store directly with your self-hosted [GOWA (Go WhatsApp Web Multi-Device)](https://github.com/aldinokemal/go-whatsapp-web-multidevice) server.
+**Notify with GOWA** bridges your WordPress site and WooCommerce store directly with your self-hosted [GOWA (Go WhatsApp Web Multi-Device)](https://github.com/aldinokemal/go-whatsapp-web-multidevice) server.
 
 Developed by [Imran Ahmed](https://imran.mvp.bd) ([omnitx](https://github.com/omnitx)).
 
@@ -39,13 +39,13 @@ Developed by [Imran Ahmed](https://imran.mvp.bd) ([omnitx](https://github.com/om
 
 This plugin connects to a self-hosted instance of GOWA (Go WhatsApp Web Multi-Device REST API gateway) hosted by the site administrator to dispatch messages.
 * GOWA Open Source Server: https://github.com/aldinokemal/go-whatsapp-web-multidevice
-* Service Endpoint: Configured by the site administrator in Settings > GOWA Notifications.
+* Service Endpoint: Configured by the site administrator in Settings > Notify with GOWA.
 
 == Installation ==
 
-1. Upload the `gowa-notifications` folder to `/wp-content/plugins/` or upload the `.zip` file via **Plugins > Add New > Upload Plugin**.
+1. Upload the `notify-with-gowa` folder to `/wp-content/plugins/` or upload the `.zip` file via **Plugins > Add New > Upload Plugin**.
 2. Activate the plugin in WordPress.
-3. Go to **Settings > GOWA Notifications** and configure your server URL, credentials, and admin phone.
+3. Go to **Settings > Notify with GOWA** and configure your server URL, credentials, and admin phone.
 4. Verify your connection on the **Direct Client Message / Test** tab.
 
 == Changelog ==
@@ -70,7 +70,7 @@ This plugin connects to a self-hosted instance of GOWA (Go WhatsApp Web Multi-De
 
 = 1.4.0 =
 * Feature: Added Action Scheduler asynchronous background queueing for non-blocking notification dispatch.
-* Rebrand: Renamed plugin to GOWA Notifications to abide by WordPress.org trademark guidelines.
+* Rebrand: Renamed plugin to Notify with GOWA to abide by WordPress.org trademark guidelines.
 * Fix: Formatted `{shipping_address}` tag to clean plain text (removed HTML `<br/>` tags).
 * Security: Obfuscated password in JSON settings export via Base64 encoding.
 * GitHub Updater Support: Integrated automatic updates for standalone GitHub installations.

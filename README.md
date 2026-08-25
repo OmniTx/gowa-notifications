@@ -1,4 +1,4 @@
-# GOWA Notifications for WordPress & WooCommerce
+# Notify with GOWA for WordPress & WooCommerce
 
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
 [![WordPress](https://img.shields.io/badge/WordPress-5.6%2B-21759b.svg)](https://wordpress.org)
@@ -48,16 +48,16 @@ Developed by **[Imran Ahmed](https://imran.mvp.bd)** ([@omnitx](https://github.c
 
 ## 📦 Installation
 
-1. Download the latest release from the repository or download `gowa-notifications.zip`.
+1. Download the latest release from the repository or download `notify-with-gowa.zip`.
 2. In your WordPress Admin Dashboard, go to **Plugins > Add New > Upload Plugin**.
-3. Upload `gowa-notifications.zip` and click **Activate**.
-4. Navigate to **Settings > GOWA Notifications** to configure your server.
+3. Upload `notify-with-gowa.zip` and click **Activate**.
+4. Navigate to **Settings > Notify with GOWA** to configure your server.
 
 ---
 
 ## ⚙️ Configuration
 
-1. Go to **Settings > GOWA Notifications > API & Gateway**:
+1. Go to **Settings > Notify with GOWA > API & Gateway**:
    - **GOWA Server URL**: Enter your GOWA REST API URL (e.g., `https://wa.yourdomain.com` or `http://localhost:3000`).
    - **Device ID**: Enter your device UUID if using GOWA multi-device (or leave blank for default).
    - **Basic Auth**: Enter your username and password if GOWA is secured with basic auth.
