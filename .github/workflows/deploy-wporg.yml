@@ -3,10 +3,10 @@ name: Deploy to WordPress.org (Manual)
 on:
   workflow_dispatch:
     inputs:
-      tag:
-        description: 'Git Tag / Version to Deploy (e.g. 1.4.8.3)'
+      ref:
+        description: 'Branch or Tag to Deploy (e.g. main or v1.4.8.3)'
         required: true
-        default: '1.4.8.3'
+        default: 'main'
 
 jobs:
   deploy-wporg:
@@ -15,7 +15,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.tag }}
+          ref: ${{ github.event.inputs.ref }}
 
       - name: Deploy to WordPress.org SVN
         uses: 10up/action-wordpress-plugin-deploy@stable
