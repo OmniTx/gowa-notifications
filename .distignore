@@ -1,0 +1,10 @@
+/.git
+/.github
+/.vscode
+/.gitignore
+/.distignore
+/README.md
+/CONTRIBUTING.md
+/build
+/includes/class-gowa-updater.php
+/*.zip
