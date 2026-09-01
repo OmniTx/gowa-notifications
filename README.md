@@ -1,8 +1,11 @@
 # Notify with GOWA for WordPress & WooCommerce
 
+[![WordPress.org](https://img.shields.io/badge/WordPress.org-notify--with--gowa-blue.svg?logo=wordpress)](https://wordpress.org/plugins/notify-with-gowa/)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
 [![WordPress](https://img.shields.io/badge/WordPress-5.6%2B-21759b.svg)](https://wordpress.org)
 [![WooCommerce](https://img.shields.io/badge/WooCommerce-Compatible-96588a.svg)](https://woocommerce.com)
+
+> **Official WordPress.org Plugin Directory:** [https://wordpress.org/plugins/notify-with-gowa/](https://wordpress.org/plugins/notify-with-gowa/)
 
 Automated and custom notifications for WordPress and WooCommerce powered by the self-hosted **[GOWA (Go WhatsApp Web Multi-Device)](https://github.com/aldinokemal/go-whatsapp-web-multidevice)** REST API gateway.
 

@@ -35,6 +35,13 @@ Developed by [Imran Ahmed](https://imran.mvp.bd) ([omnitx](https://github.com/om
 * **Export & Import Settings**: Easily backup, export, and restore all plugin configurations and notification templates via JSON.
 * **Live AJAX Testing & Diagnostics**: Instant connection checker and test message dispatcher in the admin dashboard.
 
+== Screenshots ==
+
+1. API Configuration & Gateway Connection settings.
+2. WooCommerce notification triggers and customizable message templates.
+3. Direct WhatsApp messaging metabox on WooCommerce Order details screen.
+4. WordPress core alerts, live test tool, and settings export/import.
+
 == Third-Party Service Disclosure ==
 
 This plugin connects to a self-hosted instance of GOWA (Go WhatsApp Web Multi-Device REST API gateway) hosted by the site administrator to dispatch messages.
