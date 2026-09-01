@@ -39,6 +39,7 @@ jobs:
             --exclude 'build' \
             --exclude '.gitignore' \
             --exclude '.distignore' \
+            --exclude '.wordpress-org' \
             --exclude '*.zip'
           
           cd build
@@ -61,4 +62,5 @@ jobs:
         with:
           name: notify-with-gowa-wporg
           path: notify-with-gowa-wporg.zip
+
 

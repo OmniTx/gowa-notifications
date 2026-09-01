@@ -8,3 +8,5 @@
 /build
 /includes/class-gowa-updater.php
 /*.zip
+/.wordpress-org
+
