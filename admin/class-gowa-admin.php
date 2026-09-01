@@ -66,8 +66,10 @@ class GOWA_Admin {
         }
 
         $existing  = get_option( self::OPTION_NAME, array() );
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Array fields are sanitized key-by-key below.
         $input     = isset( $_POST['gowa_settings'] ) ? (array) wp_unslash( $_POST['gowa_settings'] ) : array();
         $sanitized = is_array( $existing ) ? $existing : array();
+        $section   = isset( $_POST['gowa_tab_section'] ) ? sanitize_key( wp_unslash( $_POST['gowa_tab_section'] ) ) : '';
 
         // API settings
         if ( isset( $input['api_url'] ) ) {
@@ -173,12 +175,15 @@ class GOWA_Admin {
             return;
         }
 
-        if ( empty( $_FILES['gowa_import_file']['tmp_name'] ) ) {
+        $import_tmp_file = isset( $_FILES['gowa_import_file']['tmp_name'] ) ? sanitize_text_field( wp_unslash( $_FILES['gowa_import_file']['tmp_name'] ) ) : '';
+
+        if ( empty( $import_tmp_file ) || ! is_uploaded_file( $import_tmp_file ) ) {
             add_settings_error( 'gowa_messages', 'gowa_import_err', __( 'Please choose a valid JSON file to import.', 'notify-with-gowa' ), 'error' );
             return;
         }
 
-        $json_content = file_get_contents( $_FILES['gowa_import_file']['tmp_name'] );
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+        $json_content = file_get_contents( $import_tmp_file );
         $data         = json_decode( $json_content, true );
 
         if ( ! is_array( $data ) ) {
@@ -315,7 +320,11 @@ class GOWA_Admin {
             }
         }
         $config       = GOWA_API::get_config();
-        $active_tab   = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'api';
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Tab navigation only, no state changed.
+        $active_tab   = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'api';
+        if ( ! in_array( $active_tab, array( 'api', 'wc', 'wp', 'test', 'tools' ), true ) ) {
+            $active_tab = 'api';
+        }
         $is_wc_active = class_exists( 'WooCommerce' );
         $ajax_nonce   = wp_create_nonce( 'gowa_admin_ajax_nonce' );
         ?>
