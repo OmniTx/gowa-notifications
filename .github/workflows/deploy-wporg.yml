@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version / SVN Tag to Deploy (e.g. 1.4.8.6)'
+        description: 'Version / SVN Tag to Deploy (e.g. 1.4.8.7)'
         required: true
-        default: '1.4.8.6'
+        default: '1.4.8.7'
 
 jobs:
   deploy-wporg:

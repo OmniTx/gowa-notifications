@@ -332,7 +332,6 @@ class GOWA_Admin {
             <h1><span class="dashicons dashicons-whatsapp" style="font-size: 32px; width: 32px; height: 32px; color: #25D366; vertical-align: middle;"></span> <?php esc_html_e( 'Notify with GOWA', 'notify-with-gowa' ); ?></h1>
             <p class="description"><?php esc_html_e( 'Connect your self-hosted GOWA (Go WhatsApp Web Multi-Device) server for automated WordPress and WooCommerce alerts.', 'notify-with-gowa' ); ?></p>
 
-            <?php settings_errors( 'gowa_messages' ); ?>
 
             <h2 class="nav-tab-wrapper" style="margin-bottom: 20px;">
                 <a href="?page=notify-with-gowa&tab=api" class="nav-tab <?php echo $active_tab === 'api' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'API & Gateway', 'notify-with-gowa' ); ?></a>
