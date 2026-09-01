@@ -112,6 +112,11 @@ class GOWA_Admin {
             $sanitized['wc_low_stock_msg']         = sanitize_textarea_field( $input['wc_low_stock_msg'] ?? '' );
         }
 
+        // Uninstall data settings
+        if ( isset( $_POST['gowa_tab_section'] ) && $_POST['gowa_tab_section'] === 'uninstall_data' ) {
+            $sanitized['erase_data_on_uninstall'] = ! empty( $input['erase_data_on_uninstall'] ) ? 1 : 0;
+        }
+
         update_option( self::OPTION_NAME, $sanitized );
 
         add_settings_error( 'gowa_messages', 'gowa_settings_saved', __( 'Settings saved successfully.', 'notify-with-gowa' ), 'updated' );
@@ -578,6 +583,29 @@ class GOWA_Admin {
                                     <?php esc_html_e( 'Upload & Restore Settings', 'notify-with-gowa' ); ?>
                                 </button>
                             </p>
+                        </form>
+                    </div>
+
+                    <!-- Uninstall Data Removal Card -->
+                    <div class="card" style="padding: 20px; background: #fff; border-top: 4px solid #dc3232; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <h2 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+                            <span class="dashicons dashicons-trash" style="color: #dc3232;"></span>
+                            <?php esc_html_e( 'Uninstall Data Removal', 'notify-with-gowa' ); ?>
+                        </h2>
+                        <p><?php esc_html_e( 'By default, your settings and templates are safely preserved if this plugin is deleted. Check this box if you wish to permanently wipe all GOWA data from your database upon uninstallation.', 'notify-with-gowa' ); ?></p>
+                        <form method="post" action="" style="margin-top: 20px;">
+                            <?php wp_nonce_field( 'gowa_save_settings', 'gowa_save_settings_nonce' ); ?>
+                            <input type="hidden" name="gowa_tab_section" value="uninstall_data">
+                            <p style="margin-bottom: 20px;">
+                                <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" name="gowa_settings[erase_data_on_uninstall]" value="1" <?php checked( $saved['erase_data_on_uninstall'] ?? 0, 1 ); ?> style="margin-top: 2px;">
+                                    <span><strong><?php esc_html_e( 'Erase all GOWA data on plugin deletion', 'notify-with-gowa' ); ?></strong><br><span class="description"><?php esc_html_e( 'Permanently wipe settings from the database during uninstallation.', 'notify-with-gowa' ); ?></span></span>
+                                </label>
+                            </p>
+                            <button type="submit" class="button button-secondary" style="display: inline-flex; align-items: center; gap: 6px;">
+                                <span class="dashicons dashicons-saved" style="margin-top: -2px;"></span>
+                                <?php esc_html_e( 'Save Uninstall Preference', 'notify-with-gowa' ); ?>
+                            </button>
                         </form>
                     </div>
                 </div>
