@@ -21,7 +21,7 @@
     <config name="testVersion" value="7.4-8.3"/>
     <rule ref="PHPCompatibilityWP"/>
 
-    <!-- Use WordPress Core and Security standards -->
+    <!-- Use WordPress Standards -->
     <rule ref="WordPress-Core"/>
     <rule ref="WordPress.Security"/>
 
@@ -44,4 +44,13 @@
             </property>
         </properties>
     </rule>
+
+    <!-- Disable purely cosmetic indentation, whitespace, and file-naming rules -->
+    <rule ref="Generic.WhiteSpace.DisallowSpaceIndent"><severity>0</severity></rule>
+    <rule ref="Generic.WhiteSpace.ScopeIndent"><severity>0</severity></rule>
+    <rule ref="WordPress.WhiteSpace.PrecisionAlignment"><severity>0</severity></rule>
+    <rule ref="WordPress.Files.FileName"><severity>0</severity></rule>
+    <rule ref="WordPress.Arrays.MultipleStatementAlignment"><severity>0</severity></rule>
+    <rule ref="PEAR.Functions.FunctionCallSignature"><severity>0</severity></rule>
+    <rule ref="Generic.Files.EndFileNewline"><severity>0</severity></rule>
 </ruleset>
