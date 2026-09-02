@@ -41,6 +41,8 @@ jobs:
             --exclude '.distignore' \
             --exclude '.wordpress-org' \
             --exclude 'phpcs.xml.dist' \
+            --exclude 'CONTRIBUTING.md' \
+            --exclude 'CODE_OF_CONDUCT.md' \
             --exclude '*.zip'
           
           cd build
