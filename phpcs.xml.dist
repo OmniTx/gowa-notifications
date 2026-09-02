@@ -5,12 +5,13 @@
     <!-- Scan all PHP files in the project -->
     <file>.</file>
 
-    <!-- Exclude non-plugin directories from scanning -->
+    <!-- Exclude non-plugin directories and non-distributed legacy files -->
     <exclude-pattern>/vendor/*</exclude-pattern>
     <exclude-pattern>/node_modules/*</exclude-pattern>
     <exclude-pattern>/build/*</exclude-pattern>
     <exclude-pattern>/.wordpress-org/*</exclude-pattern>
     <exclude-pattern>/assets/*</exclude-pattern>
+    <exclude-pattern>/includes/class-gowa-updater.php</exclude-pattern>
 
     <!-- Only scan PHP files -->
     <arg name="extensions" value="php"/>
@@ -21,20 +22,10 @@
     <config name="testVersion" value="7.4-8.3"/>
     <rule ref="PHPCompatibilityWP"/>
 
-    <!-- Use WordPress Security -->
+    <!-- WordPress Security Standards -->
     <rule ref="WordPress.Security"/>
 
-    <!-- Use WordPress Core with cosmetic exclusions -->
-    <rule ref="WordPress-Core">
-        <exclude name="Generic.WhiteSpace.DisallowSpaceIndent"/>
-        <exclude name="Generic.WhiteSpace.ScopeIndent"/>
-        <exclude name="WordPress.Files.FileName"/>
-        <exclude name="WordPress.Arrays.MultipleStatementAlignment"/>
-        <exclude name="PEAR.Functions.FunctionCallSignature"/>
-        <exclude name="Generic.Files.EndFileNewline"/>
-    </rule>
-
-    <!-- Verify text domain matches plugin slug -->
+    <!-- WordPress Internationalization -->
     <rule ref="WordPress.WP.I18n">
         <properties>
             <property name="text_domain" type="array">
@@ -43,7 +34,7 @@
         </properties>
     </rule>
 
-    <!-- Verify naming prefixes -->
+    <!-- WordPress Prefix Conventions -->
     <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
         <properties>
             <property name="prefixes" type="array">

@@ -73,7 +73,7 @@ class GOWA_WhatsApp_Plugin {
     private function init_hooks() {
         add_action( 'before_woocommerce_init', array( $this, 'declare_hpos_compatibility' ) );
         add_filter( 'plugin_action_links_' . GOWA_PLUGIN_BASENAME, array( $this, 'add_action_links' ) );
-        
+
         // Action Scheduler asynchronous background worker
         add_action( 'gowa_async_send_message', array( 'GOWA_API', 'handle_async_send' ), 10, 4 );
 
@@ -115,7 +115,7 @@ class GOWA_WhatsApp_Plugin {
             'wc_cust_process_msg'     => "Hello {customer_name},\n\nThank you for your order *#{order_id}* at {site_name}! We have received your order and it is currently being processed.\n\nOrdered Items:\n{order_items}\n\nOrder Total: {order_total}\n\nWe will contact you shortly for delivery.",
             'enable_wc_cust_complete' => 1,
             'wc_cust_complete_msg'    => "Hello {customer_name},\n\nYour order *#{order_id}* from {site_name} has been completed! 🎉\n\nThank you for shopping with us. Hope you enjoy our service!",
-            'enable_wc_cust_cancelled'=> 0,
+            'enable_wc_cust_cancelled' => 0,
             'wc_cust_cancelled_msg'   => "Hello {customer_name},\n\nYour order *#{order_id}* at {site_name} has been cancelled. If you have any questions, please contact our support team.",
             'enable_wc_low_stock'     => 0,
             'wc_low_stock_msg'        => "⚠️ *Low Stock Alert*\n\nProduct: {product_name} (ID: {product_id})\nRemaining Stock: {stock_quantity}",
