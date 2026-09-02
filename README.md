@@ -1,5 +1,9 @@
 # Notify with GOWA for WordPress & WooCommerce
 
+[![PHP Coding Standards](https://github.com/OmniTx/notify-with-gowa/actions/workflows/phpcs.yml/badge.svg)](https://github.com/OmniTx/notify-with-gowa/actions/workflows/phpcs.yml)
+[![Build & Release](https://github.com/OmniTx/notify-with-gowa/actions/workflows/release.yml/badge.svg)](https://github.com/OmniTx/notify-with-gowa/actions/workflows/release.yml)
+[![Deploy to WordPress.org](https://github.com/OmniTx/notify-with-gowa/actions/workflows/deploy-wporg.yml/badge.svg)](https://github.com/OmniTx/notify-with-gowa/actions/workflows/deploy-wporg.yml)
+
 [![WordPress.org](https://img.shields.io/badge/WordPress.org-notify--with--gowa-blue.svg?logo=wordpress)](https://wordpress.org/plugins/notify-with-gowa/)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
 [![WordPress](https://img.shields.io/badge/WordPress-5.6%2B-21759b.svg)](https://wordpress.org)

@@ -1,4 +1,4 @@
-name: PHP Coding Standards (WPCS)
+name: PHP Coding Standards
 
 on:
   push:
@@ -11,6 +11,7 @@ on:
       - '**.php'
       - '.github/workflows/phpcs.yml'
       - 'phpcs.xml.dist'
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -18,7 +19,7 @@ concurrency:
 
 jobs:
   phpcs:
-    name: WordPress Coding Standards
+    name: PHP Coding Standards
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -33,9 +34,10 @@ jobs:
 
       - name: Install PHPCS and WordPress Coding Standards
         run: |
+          composer global config --no-plugins allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
           composer global require --dev --no-interaction --quiet \
-            wp-coding-standards/wpcs \
             dealerdirect/phpcodesniffer-composer-installer \
+            wp-coding-standards/wpcs \
             phpcompatibility/phpcompatibility-wp
           echo "$(composer config -g home)/vendor/bin" >> $GITHUB_PATH
 
