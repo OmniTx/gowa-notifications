@@ -1,0 +1,43 @@
+name: PHP Coding Standards (WPCS)
+
+on:
+  push:
+    paths:
+      - '**.php'
+      - '.github/workflows/phpcs.yml'
+      - 'phpcs.xml.dist'
+  pull_request:
+    paths:
+      - '**.php'
+      - '.github/workflows/phpcs.yml'
+      - 'phpcs.xml.dist'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  phpcs:
+    name: WordPress Coding Standards
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: cs2pr
+
+      - name: Install PHPCS and WordPress Coding Standards
+        run: |
+          composer global require --dev --no-interaction --quiet \
+            wp-coding-standards/wpcs \
+            dealerdirect/phpcodesniffer-composer-installer \
+            phpcompatibility/phpcompatibility-wp
+          echo "$(composer config -g home)/vendor/bin" >> $GITHUB_PATH
+
+      - name: Run PHPCS Scan
+        run: phpcs -q --report=checkstyle | cs2pr
