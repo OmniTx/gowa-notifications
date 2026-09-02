@@ -5,7 +5,7 @@
 [![Deploy to WordPress.org](https://github.com/OmniTx/notify-with-gowa/actions/workflows/deploy-wporg.yml/badge.svg)](https://github.com/OmniTx/notify-with-gowa/actions/workflows/deploy-wporg.yml)
 
 [![WordPress.org](https://img.shields.io/badge/WordPress.org-notify--with--gowa-blue.svg?logo=wordpress)](https://wordpress.org/plugins/notify-with-gowa/)
-[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![WordPress](https://img.shields.io/badge/WordPress-5.6%2B-21759b.svg)](https://wordpress.org)
 [![WooCommerce](https://img.shields.io/badge/WooCommerce-Compatible-96588a.svg)](https://woocommerce.com)
 
@@ -86,4 +86,4 @@ Developed by **[Imran Ahmed](https://imran.mvp.bd)** ([@omnitx](https://github.c
 
 ## 📄 License
 
-This project is licensed under the GNU General Public License v2.0 or later. See [LICENSE](LICENSE) for details.
+This project is licensed under the GNU General Public License v3.0 or later. See [LICENSE](LICENSE) for details.
