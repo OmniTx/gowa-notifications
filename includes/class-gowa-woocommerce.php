@@ -1,13 +1,16 @@
 <?php
 /**
  * GOWA WooCommerce Integration, Order Actions & Dropdown
+<?php
+/**
+ * GOWA WooCommerce Integration, Order Actions & Dropdown
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-class GOWA_WooCommerce {
+class Notify_With_GOWA_WooCommerce {
 
     public function __construct() {
         // Order receipt triggers — cover ALL checkout types & payment methods:
@@ -36,7 +39,7 @@ class GOWA_WooCommerce {
 
         // Admin Order Metabox (Send Custom Message to Client)
         add_action( 'add_meta_boxes', array( $this, 'register_order_metabox' ) );
-        add_action( 'wp_ajax_gowa_send_order_custom_msg', array( $this, 'ajax_send_order_custom_msg' ) );
+        add_action( 'wp_ajax_notify_with_gowa_send_order_msg', array( $this, 'ajax_send_order_custom_msg' ) );
     }
 
     /**
@@ -89,12 +92,12 @@ class GOWA_WooCommerce {
         }
 
         // Deduplication — prevent double sends when multiple hooks fire across requests
-        if ( ! $force && method_exists( $order, 'get_meta' ) && $order->get_meta( '_gowa_receipt_sent', true ) ) {
+        if ( ! $force && method_exists( $order, 'get_meta' ) && $order->get_meta( '_notify_with_gowa_receipt_sent', true ) ) {
             return;
         }
 
-        $raw_settings = get_option( 'gowa_whatsapp_settings', array() );
-        $settings     = wp_parse_args( is_array( $raw_settings ) ? $raw_settings : array(), GOWA_WhatsApp_Plugin::get_defaults() );
+        $raw_settings = get_option( 'notify_with_gowa_settings', array() );
+        $settings     = wp_parse_args( is_array( $raw_settings ) ? $raw_settings : array(), Notify_With_GOWA::get_defaults() );
 
         // 1. Send Receipt to Client
         if ( ! empty( $settings['enable_wc_cust_process'] ) ) {
@@ -102,7 +105,7 @@ class GOWA_WooCommerce {
             if ( ! empty( $customer_phone ) ) {
                 $default_tpl = ! empty( $settings['wc_cust_process_msg'] ) ? $settings['wc_cust_process_msg'] : "Hello {customer_name},\n\nThank you for your order *#{order_id}* at {site_name}! We have received your order and it is currently being processed.\n\nTotal: {order_total}\nItems: {order_items}\n\nWe will contact you shortly for delivery.";
                 $message     = $this->parse_order_tags( $default_tpl, $order );
-                GOWA_API::schedule_message( $customer_phone, $message, $order, 'order_received', $settings['async_delay_seconds'] ?? 0 );
+                Notify_With_GOWA_API::schedule_message( $customer_phone, $message, $order, 'order_received', $settings['async_delay_seconds'] ?? 0 );
             }
         }
 
@@ -113,16 +116,16 @@ class GOWA_WooCommerce {
             
             $admin_phones = array_filter( array_map( 'trim', explode( ',', $settings['admin_phone'] ) ) );
             foreach ( $admin_phones as $phone ) {
-                GOWA_API::schedule_message( $phone, $admin_msg, $order, 'admin_new_order', $settings['async_delay_seconds'] ?? 0 );
+                Notify_With_GOWA_API::schedule_message( $phone, $admin_msg, $order, 'admin_new_order', $settings['async_delay_seconds'] ?? 0 );
             }
         }
 
         // Mark receipt as sent in order metadata
         if ( method_exists( $order, 'update_meta_data' ) && method_exists( $order, 'save_meta_data' ) ) {
-            $order->update_meta_data( '_gowa_receipt_sent', 1 );
+            $order->update_meta_data( '_notify_with_gowa_receipt_sent', 1 );
             $order->save_meta_data();
         } else {
-            update_post_meta( $actual_order_id, '_gowa_receipt_sent', 1 );
+            update_post_meta( $actual_order_id, '_notify_with_gowa_receipt_sent', 1 );
         }
     }
 
@@ -132,8 +135,8 @@ class GOWA_WooCommerce {
             return;
         }
 
-        $raw_settings = get_option( 'gowa_whatsapp_settings', array() );
-        $settings     = wp_parse_args( is_array( $raw_settings ) ? $raw_settings : array(), GOWA_WhatsApp_Plugin::get_defaults() );
+        $raw_settings = get_option( 'notify_with_gowa_settings', array() );
+        $settings     = wp_parse_args( is_array( $raw_settings ) ? $raw_settings : array(), Notify_With_GOWA::get_defaults() );
         if ( empty( $settings['enable_wc_cust_complete'] ) ) {
             return;
         }
@@ -153,7 +156,7 @@ class GOWA_WooCommerce {
         $template = ! empty( $settings['wc_cust_complete_msg'] ) ? $settings['wc_cust_complete_msg'] : "Hello {customer_name},\n\nYour order *#{order_id}* has been completed! 🎉\n\nThank you for shopping with {site_name}.";
         $message  = $this->parse_order_tags( $template, $order );
 
-        GOWA_API::schedule_message( $customer_phone, $message, $order, 'order_completed', $settings['async_delay_seconds'] ?? 0 );
+        Notify_With_GOWA_API::schedule_message( $customer_phone, $message, $order, 'order_completed', $settings['async_delay_seconds'] ?? 0 );
     }
 
     public function on_order_cancelled( $order_id, $order = null ) {
@@ -162,8 +165,8 @@ class GOWA_WooCommerce {
             return;
         }
 
-        $raw_settings = get_option( 'gowa_whatsapp_settings', array() );
-        $settings     = wp_parse_args( is_array( $raw_settings ) ? $raw_settings : array(), GOWA_WhatsApp_Plugin::get_defaults() );
+        $raw_settings = get_option( 'notify_with_gowa_settings', array() );
+        $settings     = wp_parse_args( is_array( $raw_settings ) ? $raw_settings : array(), Notify_With_GOWA::get_defaults() );
         if ( empty( $settings['enable_wc_cust_cancelled'] ) ) {
             return;
         }
@@ -183,11 +186,11 @@ class GOWA_WooCommerce {
         $template = ! empty( $settings['wc_cust_cancelled_msg'] ) ? $settings['wc_cust_cancelled_msg'] : "Hello {customer_name},\n\nYour order *#{order_id}* at {site_name} has been cancelled.";
         $message  = $this->parse_order_tags( $template, $order );
 
-        GOWA_API::schedule_message( $customer_phone, $message, $order, 'order_cancelled', $settings['async_delay_seconds'] ?? 0 );
+        Notify_With_GOWA_API::schedule_message( $customer_phone, $message, $order, 'order_cancelled', $settings['async_delay_seconds'] ?? 0 );
     }
 
     public function on_low_stock( $product ) {
-        $settings = get_option( 'gowa_whatsapp_settings', array() );
+        $settings = get_option( 'notify_with_gowa_settings', array() );
         if ( empty( $settings['enable_wc_low_stock'] ) || empty( $settings['admin_phone'] ) ) {
             return;
         }
@@ -207,7 +210,7 @@ class GOWA_WooCommerce {
         $message = str_replace( array_keys( $tags ), array_values( $tags ), $template );
         $admin_phones = array_filter( array_map( 'trim', explode( ',', $settings['admin_phone'] ) ) );
         foreach ( $admin_phones as $phone ) {
-            GOWA_API::schedule_message( $phone, $message, null, 'low_stock', $settings['async_delay_seconds'] ?? 0 );
+            Notify_With_GOWA_API::schedule_message( $phone, $message, null, 'low_stock', $settings['async_delay_seconds'] ?? 0 );
         }
     }
 
@@ -231,7 +234,7 @@ class GOWA_WooCommerce {
         }
 
         add_meta_box(
-            'gowa_whatsapp_order_metabox',
+            'notify_with_gowa_order_metabox',
             __( 'WhatsApp - Send Message to Client', 'notify-with-gowa' ),
             array( $this, 'render_order_metabox' ),
             $screen,
@@ -250,45 +253,45 @@ class GOWA_WooCommerce {
         $first_name = $order->get_billing_first_name();
         $order_id = $order->get_id();
         ?>
-        <div class="gowa-order-box" style="padding: 5px 0;">
+        <div class="nwg-order-box" style="padding: 5px 0;">
             <p style="margin-top:0;">
-                <label for="gowa_client_phone"><strong><?php esc_html_e( 'Client WhatsApp Number:', 'notify-with-gowa' ); ?></strong></label>
-                <input type="text" id="gowa_client_phone" class="widefat" value="<?php echo esc_attr( $phone ); ?>" placeholder="e.g. 01700000000">
+                <label for="nwg_client_phone"><strong><?php esc_html_e( 'Client WhatsApp Number:', 'notify-with-gowa' ); ?></strong></label>
+                <input type="text" id="nwg_client_phone" class="widefat" value="<?php echo esc_attr( $phone ); ?>" placeholder="e.g. 01700000000">
             </p>
 
             <p>
-                <label for="gowa_client_custom_text"><strong><?php esc_html_e( 'Custom Message to Client:', 'notify-with-gowa' ); ?></strong></label>
-                <textarea id="gowa_client_custom_text" rows="5" class="widefat" placeholder="Type message to text client..."><?php echo esc_textarea( sprintf( "Hello %s, regarding your order #%s:\n\n", $first_name, $order_id ) ); ?></textarea>
+                <label for="nwg_client_custom_text"><strong><?php esc_html_e( 'Custom Message to Client:', 'notify-with-gowa' ); ?></strong></label>
+                <textarea id="nwg_client_custom_text" rows="5" class="widefat" placeholder="Type message to text client..."><?php echo esc_textarea( sprintf( "Hello %s, regarding your order #%s:\n\n", $first_name, $order_id ) ); ?></textarea>
             </p>
 
             <div style="margin-bottom: 10px;">
                 <small style="color: #666; display: block; margin-bottom: 5px;"><?php esc_html_e( 'Quick Templates:', 'notify-with-gowa' ); ?></small>
-                <button type="button" class="button button-small gowa-tpl-btn" data-tpl="<?php echo esc_attr( sprintf( "Hello %s, your order #%s has been received and is being prepared!", $first_name, $order_id ) ); ?>">Order Update</button>
-                <button type="button" class="button button-small gowa-tpl-btn" data-tpl="<?php echo esc_attr( sprintf( "Hello %s, your order #%s is ready for delivery! Tracking details: ", $first_name, $order_id ) ); ?>">Shipping Info</button>
-                <button type="button" class="button button-small gowa-tpl-btn" data-tpl="<?php echo esc_attr( sprintf( "Hello %s, quick reminder regarding your order #%s. Total: %s. Pay here: %s", $first_name, $order_id, html_entity_decode( wp_strip_all_tags( wc_price( $order->get_total(), array( 'currency' => $order->get_currency() ) ) ) ), $order->get_checkout_payment_url() ) ); ?>">Payment</button>
+                <button type="button" class="button button-small nwg-tpl-btn" data-tpl="<?php echo esc_attr( sprintf( "Hello %s, your order #%s has been received and is being prepared!", $first_name, $order_id ) ); ?>">Order Update</button>
+                <button type="button" class="button button-small nwg-tpl-btn" data-tpl="<?php echo esc_attr( sprintf( "Hello %s, your order #%s is ready for delivery! Tracking details: ", $first_name, $order_id ) ); ?>">Shipping Info</button>
+                <button type="button" class="button button-small nwg-tpl-btn" data-tpl="<?php echo esc_attr( sprintf( "Hello %s, quick reminder regarding your order #%s. Total: %s. Pay here: %s", $first_name, $order_id, html_entity_decode( wp_strip_all_tags( wc_price( $order->get_total(), array( 'currency' => $order->get_currency() ) ) ) ), $order->get_checkout_payment_url() ) ); ?>">Payment</button>
             </div>
 
             <p style="margin-bottom:0;">
-                <button type="button" id="gowa_btn_send_custom_msg" class="button button-primary widefat" style="text-align:center; height:34px; line-height:32px; background:#25D366; border-color:#1EBE5D;">
+                <button type="button" id="nwg_btn_send_custom_msg" class="button button-primary widefat" style="text-align:center; height:34px; line-height:32px; background:#25D366; border-color:#1EBE5D;">
                     <span class="dashicons dashicons-whatsapp" style="vertical-align: middle; margin-top:-2px;"></span> <?php esc_html_e( 'Send WhatsApp to Client', 'notify-with-gowa' ); ?>
                 </button>
             </p>
-            <div id="gowa_order_msg_status" style="margin-top: 8px; font-weight: bold; display: none;"></div>
+            <div id="nwg_order_msg_status" style="margin-top: 8px; font-weight: bold; display: none;"></div>
         </div>
 
         <?php
         wc_enqueue_js( "
-            jQuery('.gowa-tpl-btn').on('click', function(e) {
+            jQuery('.nwg-tpl-btn').on('click', function(e) {
                 e.preventDefault();
-                jQuery('#gowa_client_custom_text').val(jQuery(this).data('tpl'));
+                jQuery('#nwg_client_custom_text').val(jQuery(this).data('tpl'));
             });
 
-            jQuery('#gowa_btn_send_custom_msg').on('click', function(e) {
+            jQuery('#nwg_btn_send_custom_msg').on('click', function(e) {
                 e.preventDefault();
-                var phone = jQuery('#gowa_client_phone').val().trim();
-                var msg   = jQuery('#gowa_client_custom_text').val().trim();
+                var phone = jQuery('#nwg_client_phone').val().trim();
+                var msg   = jQuery('#nwg_client_custom_text').val().trim();
                 var btn   = jQuery(this);
-                var status = jQuery('#gowa_order_msg_status');
+                var status = jQuery('#nwg_order_msg_status');
 
                 if (!phone) {
                     alert('Please enter a valid client phone number.');
@@ -306,11 +309,11 @@ class GOWA_WooCommerce {
                     url: ajaxurl,
                     type: 'POST',
                     data: {
-                        action: 'gowa_send_order_custom_msg',
+                        action: 'notify_with_gowa_send_order_msg',
                         order_id: '" . esc_js( $order_id ) . "',
                         phone: phone,
                         message: msg,
-                        nonce: '" . esc_js( wp_create_nonce( 'gowa_order_msg_nonce' ) ) . "'
+                        nonce: '" . esc_js( wp_create_nonce( 'notify_with_gowa_order_msg_nonce' ) ) . "'
                     },
                     success: function(res) {
                         btn.prop('disabled', false).html('<span class=\"dashicons dashicons-whatsapp\" style=\"vertical-align: middle; margin-top:-2px;\"></span> Send WhatsApp to Client');
@@ -330,7 +333,7 @@ class GOWA_WooCommerce {
     }
 
     public function ajax_send_order_custom_msg() {
-        check_ajax_referer( 'gowa_order_msg_nonce', 'nonce' );
+        check_ajax_referer( 'notify_with_gowa_order_msg_nonce', 'nonce' );
 
         if ( ! current_user_can( 'edit_shop_orders' ) && ! current_user_can( 'manage_woocommerce' ) ) {
             wp_send_json_error( array( 'message' => __( 'Permission denied.', 'notify-with-gowa' ) ) );
@@ -345,7 +348,7 @@ class GOWA_WooCommerce {
         }
 
         $order = wc_get_order( $order_id );
-        $result = GOWA_API::send_message( $phone, $message, $order, 'manual_custom_msg' );
+        $result = Notify_With_GOWA_API::send_message( $phone, $message, $order, 'manual_custom_msg' );
 
         if ( $result['success'] ) {
             wp_send_json_success( array( 'message' => __( 'Message successfully sent to client via WhatsApp!', 'notify-with-gowa' ) ) );
@@ -400,8 +403,8 @@ class GOWA_WooCommerce {
         );
 
         $parsed = str_replace( array_keys( $tags ), array_values( $tags ), $template );
-        return apply_filters( 'gowa_parsed_order_message', $parsed, $order );
+        return apply_filters( 'notify_with_gowa_parsed_order_message', $parsed, $order );
     }
 }
 
-new GOWA_WooCommerce();
+new Notify_With_GOWA_WooCommerce();

@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-class GOWA_API {
+class Notify_With_GOWA_API {
 
     /**
      * Get API configuration from WordPress options
@@ -15,7 +15,7 @@ class GOWA_API {
      * @return array
      */
     public static function get_config() {
-        $settings = get_option( 'gowa_whatsapp_settings', array() );
+        $settings = get_option( 'notify_with_gowa_settings', array() );
 
         $api_url    = ! empty( $settings['api_url'] ) ? $settings['api_url'] : 'http://localhost:3000';
         $device_id  = ! empty( $settings['device_id'] ) ? $settings['device_id'] : '';
@@ -53,7 +53,7 @@ class GOWA_API {
         if ( $delay_seconds > 0 && function_exists( 'as_schedule_single_action' ) ) {
             as_schedule_single_action(
                 time() + $delay_seconds,
-                'gowa_async_send_message',
+                'notify_with_gowa_async_send',
                 array(
                     'raw_phone'   => $raw_phone,
                     'message'     => $message,
@@ -97,7 +97,7 @@ class GOWA_API {
 
         // Native WooCommerce Logger
         $logger      = function_exists( 'wc_get_logger' ) ? wc_get_logger() : null;
-        $log_context = array( 'source' => 'gowa_whatsapp_api' );
+        $log_context = array( 'source' => 'notify_with_gowa_api' );
 
         $phone = self::format_phone( $raw_phone );
         if ( empty( $phone ) ) {

@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-class GOWA_GitHub_Updater {
+class Notify_With_GOWA_GitHub_Updater {
 
     private $file;
     private $basename;
@@ -218,5 +218,5 @@ class GOWA_GitHub_Updater {
 }
 
 if ( is_admin() ) {
-    new GOWA_GitHub_Updater( GOWA_PLUGIN_DIR . 'notify-with-gowa.php' );
+    new Notify_With_GOWA_GitHub_Updater( GOWA_PLUGIN_DIR . 'notify-with-gowa.php' );
 }

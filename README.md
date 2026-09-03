@@ -41,7 +41,7 @@ Developed by **[Imran Ahmed](https://imran.mvp.bd)** ([@omnitx](https://github.c
   - Automatically prefixes local numbers starting with `0` (e.g. `01700000000` with country code `880` becomes `8801700000000@s.whatsapp.net`).
   - Supports international formats with `+` or without.
 - **WooCommerce Native Logging**:
-  - Detailed logging using `wc_get_logger()` under source `gowa_whatsapp_api` (viewable in **WooCommerce > Status > Logs**).
+  - Detailed logging using `wc_get_logger()` under source `notify_with_gowa_api` (viewable in **WooCommerce > Status > Logs**).
 - **Export & Import Settings**:
   - One-click export and import of all plugin configurations, API details, and customized notification templates via JSON (with credential obfuscation).
 - **Live Diagnostics & Test Tool**:

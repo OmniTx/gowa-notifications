@@ -7,12 +7,12 @@ jQuery(document).ready(function($) {
     var ajaxurl = nwg_ajax.ajaxurl;
 
     // 1. Direct Message Handler
-    $('#gowa_btn_direct_send').on('click', function(e) {
+    $('#nwg_btn_direct_send').on('click', function(e) {
         e.preventDefault();
         var btn = $(this);
-        var statusBox = $('#gowa_direct_send_status');
-        var phone = $('#gowa_direct_phone').val().trim();
-        var message = $('#gowa_direct_message').val().trim();
+        var statusBox = $('#nwg_direct_send_status');
+        var phone = $('#nwg_direct_phone').val().trim();
+        var message = $('#nwg_direct_message').val().trim();
 
         if (!phone) {
             alert('Please enter a valid client phone number.');
@@ -30,7 +30,7 @@ jQuery(document).ready(function($) {
             url: ajaxurl,
             type: 'POST',
             data: {
-                action: 'gowa_ajax_direct_send',
+                action: 'notify_with_gowa_direct_send',
                 phone: phone,
                 message: message,
                 nonce: ajaxNonce
@@ -53,10 +53,10 @@ jQuery(document).ready(function($) {
     });
 
     // 2. Gateway Connection Check Handler
-    $('#gowa_btn_check_connection').on('click', function(e) {
+    $('#nwg_btn_check_connection').on('click', function(e) {
         e.preventDefault();
         var btn = $(this);
-        var statusBox = $('#gowa_conn_status_box');
+        var statusBox = $('#nwg_conn_status_box');
 
         btn.prop('disabled', true).html('<span class="spinner is-active" style="float:none; margin:0 5px 0 0; vertical-align:middle;"></span> Checking GOWA Gateway...');
         statusBox.hide().html('');
@@ -65,7 +65,7 @@ jQuery(document).ready(function($) {
             url: ajaxurl,
             type: 'POST',
             data: {
-                action: 'gowa_ajax_check_connection',
+                action: 'notify_with_gowa_check_connection',
                 nonce: ajaxNonce
             },
             success: function(res) {

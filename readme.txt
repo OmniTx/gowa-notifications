@@ -5,7 +5,7 @@ Tags: notifications, woocommerce alerts, order notifications, gateway, messaging
 Requires at least: 5.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.4.8.7
+Stable tag: 1.4.8.8
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -31,7 +31,7 @@ Developed by [Imran Ahmed](https://imran.mvp.bd) ([omnitx](https://github.com/om
 * **WordPress Core Alerts**: Instant notifications for new user registrations and comments.
 * **Customizable Message Templates**: Full template control with dynamic placeholders (`{customer_name}`, `{order_id}`, `{order_total}`, `{order_items}`, `{customer_note}`, `{shipping_address}`, `{payment_method}`, `{site_name}`).
 * **Universal Phone Number Normalizer**: Automatic country code prefixing (e.g. `880`, `1`, `91`, `44`, `62`).
-* **Native WooCommerce Logger**: Full debug and transaction logs stored under WooCommerce > Status > Logs (`gowa_whatsapp_api`).
+* **Native WooCommerce Logger**: Full debug and transaction logs stored under WooCommerce > Status > Logs (`notify_with_gowa_api`).
 * **Export & Import Settings**: Easily backup, export, and restore all plugin configurations and notification templates via JSON.
 * **Live AJAX Testing & Diagnostics**: Instant connection checker and test message dispatcher in the admin dashboard.
 
@@ -56,6 +56,10 @@ This plugin connects to a self-hosted instance of GOWA (Go WhatsApp Web Multi-De
 4. Verify your connection on the **Direct Client Message / Test** tab.
 
 == Changelog ==
+
+= 1.4.8.8 =
+* Refactor: Comprehensive rebrand of internal functions, classes, database option keys, and hooks to Notify with GOWA.
+* Safeguard: Wrapped entry function `notify_with_gowa()` in `function_exists()` safety check.
 
 = 1.4.8.7 =
 - Remove duplicate settings notice on options page

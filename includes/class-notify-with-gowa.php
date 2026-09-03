@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-class GOWA_Notifications {
+class Notify_With_GOWA_Notifications {
 
     public function __construct() {
         add_action( 'user_register', array( $this, 'on_user_register' ), 10, 1 );
@@ -15,7 +15,7 @@ class GOWA_Notifications {
     }
 
     public function on_user_register( $user_id ) {
-        $settings = get_option( 'gowa_whatsapp_settings', array() );
+        $settings = get_option( 'notify_with_gowa_settings', array() );
 
         if ( empty( $settings['enable_wp_user_reg'] ) || empty( $settings['admin_phone'] ) ) {
             return;
@@ -40,12 +40,12 @@ class GOWA_Notifications {
         $message      = str_replace( array_keys( $tags ), array_values( $tags ), $template );
         $admin_phones = array_filter( array_map( 'trim', explode( ',', $settings['admin_phone'] ) ) );
         foreach ( $admin_phones as $phone ) {
-            GOWA_API::send_message( $phone, $message, null, 'wp_user_register' );
+            Notify_With_GOWA_API::send_message( $phone, $message, null, 'wp_user_register' );
         }
     }
 
     public function on_new_comment( $comment_id, $comment_approved, $commentdata ) {
-        $settings = get_option( 'gowa_whatsapp_settings', array() );
+        $settings = get_option( 'notify_with_gowa_settings', array() );
 
         if ( empty( $settings['enable_wp_comment'] ) || empty( $settings['admin_phone'] ) ) {
             return;
@@ -69,9 +69,9 @@ class GOWA_Notifications {
         $message      = str_replace( array_keys( $tags ), array_values( $tags ), $template );
         $admin_phones = array_filter( array_map( 'trim', explode( ',', $settings['admin_phone'] ) ) );
         foreach ( $admin_phones as $phone ) {
-            GOWA_API::send_message( $phone, $message, null, 'wp_comment' );
+            Notify_With_GOWA_API::send_message( $phone, $message, null, 'wp_comment' );
         }
     }
 }
 
-new GOWA_Notifications();
+new Notify_With_GOWA_Notifications();

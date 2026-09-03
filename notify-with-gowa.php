@@ -3,7 +3,7 @@
  * Plugin Name:       Notify with GOWA
  * Plugin URI:        https://github.com/omnitx/notify-with-gowa
  * Description:       Automated and custom notifications for WordPress and WooCommerce powered by the self-hosted GOWA (Go WhatsApp Web Multi-Device) REST API gateway.
- * Version:           1.4.8.7
+ * Version:           1.4.8.8
  * Author:            Imran Ahmed
  * Author URI:        https://imran.mvp.bd
  * Text Domain:       notify-with-gowa
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'GOWA_VERSION', '1.4.8.7' );
+define( 'GOWA_VERSION', '1.4.8.8' );
 define( 'GOWA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'GOWA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'GOWA_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -26,7 +26,7 @@ define( 'GOWA_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 /**
  * Main Plugin Class
  */
-class GOWA_WhatsApp_Plugin {
+class Notify_With_GOWA {
 
     private static $instance = null;
 
@@ -63,7 +63,7 @@ class GOWA_WhatsApp_Plugin {
     }
 
     public function load_woocommerce_integration() {
-        if ( class_exists( 'WooCommerce' ) && ! class_exists( 'GOWA_WooCommerce' ) ) {
+        if ( class_exists( 'WooCommerce' ) && ! class_exists( 'Notify_With_GOWA_WooCommerce' ) ) {
             if ( file_exists( GOWA_PLUGIN_DIR . 'includes/class-gowa-woocommerce.php' ) ) {
                 require_once GOWA_PLUGIN_DIR . 'includes/class-gowa-woocommerce.php';
             }
@@ -75,7 +75,7 @@ class GOWA_WhatsApp_Plugin {
         add_filter( 'plugin_action_links_' . GOWA_PLUGIN_BASENAME, array( $this, 'add_action_links' ) );
 
         // Action Scheduler asynchronous background worker
-        add_action( 'gowa_async_send_message', array( 'GOWA_API', 'handle_async_send' ), 10, 4 );
+        add_action( 'notify_with_gowa_async_send', array( 'Notify_With_GOWA_API', 'handle_async_send' ), 10, 4 );
 
         register_activation_hook( __FILE__, array( $this, 'activate' ) );
     }
@@ -125,13 +125,15 @@ class GOWA_WhatsApp_Plugin {
 
     public function activate() {
         $defaults = self::get_defaults();
-        $existing = get_option( 'gowa_whatsapp_settings', array() );
+        $existing = get_option( 'notify_with_gowa_settings', array() );
         $merged   = wp_parse_args( $existing, $defaults );
-        update_option( 'gowa_whatsapp_settings', $merged );
+        update_option( 'notify_with_gowa_settings', $merged );
     }
 }
 
-function gowa_notifications() {
-    return GOWA_WhatsApp_Plugin::instance();
+if ( ! function_exists( 'notify_with_gowa' ) ) {
+    function notify_with_gowa() {
+        return Notify_With_GOWA::instance();
+    }
 }
-gowa_notifications();
+notify_with_gowa();
