@@ -42,6 +42,7 @@
                 <element value="notify_with_gowa"/>
                 <element value="Notify_With_GOWA"/>
                 <element value="GOWA"/>
+                <element value="nwg"/>
             </property>
         </properties>
     </rule>
